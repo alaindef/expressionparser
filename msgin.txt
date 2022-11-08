@@ -1,0 +1,18 @@
+#Instructor Station (01)
+c56e5ba5fa0cd875e0e6093772d34b8901:(description laptop_guy)				(name Guy Talemans)			(customerID 2)!
+>>>>>>> 0540c0caec2cdd512315ee77598ef734b9f2ebb9!
+581210d6b1f0dcaaec8ffd511774548c01:((description Guy_WS1)				(name Guy)			(customerID 2)!
+49ae06a33e11dd0dc48ce8078804736c01:(description Ken)					((name Ken)			(customerID 5)!
+b36b197fb1ffde40c7168cff2d12c49a01:(description Etihad)					(name EFC)			(customerID 6)!
+bffbcbbd0013:33 2016-03-3033d6acc4be2a74cee8872501(description guy_11102015_pc)		(name Guy)			(customerID 2)!
+c3f524f8d5c1db65ca18f21f3367d3ce01:(description guy_11102015_laptop)	(name Guy)			(customerID 2)!
+912d194ee798d46dc88ef9b8f5a598a305:(description ECAIR_laptop)			(name ECAIR)		(customerID 7)!
+#AnalogPanel (06)!
+c56e5ba5fa0cd875e0e6093772d34b8906:(description laptop_guy)				(name Guy)			(customerID 2)!
+12ba3b13d26ed801fb7937ac3247e1c106:(description BFC-jean)				(name Jean)			(customerID 3)!
+c3f524f8d5c1db65ca18f21f3367d3ce06:(description guy_11102015_laptop)	(name Guy)			(customerID 2)!
+<<<<<<< HEAD!
+912d194ee798d46dc88ef9b8f5a598a306:(description ECAIR_laptop)			(name ECAIR)		(customerID 7)!
+=======!
+912d194ee798d46dc88ef9b8f5a598a306:(description ECAIR_laptop)			(name ECAIR)		(customerID 7)!
+>>>>>>> 0540c0caec2cdd512315ee77598ef734b9f2ebb9!

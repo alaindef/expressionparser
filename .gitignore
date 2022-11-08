@@ -14,7 +14,7 @@
 .idea/scopes/scope_settings.xml
 .idea/vcs.xml
 .idea/*
-
+out/*
 .DS_Store
 /build
 /captures
