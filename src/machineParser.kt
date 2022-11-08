@@ -2,28 +2,12 @@ import MachineParser.SymbolType.*
 import java.io.IOError
 
 /* Backus Naur:
-<symbol>	::= <HASHTAG> | <LINEENDKEY> | <PAIR_START> | <PAIR_END> | <STRING> | <ETX> | <STRING>
-<line>			::= <commentline> | <linekey> <linebody>
-<commentline>	::= <HASHTAG> <anything>
-<linekey>		::= <STRING> <LINEENDKEY>
-<linebody>		::= <key_value_pair> | <key_value_pair> <linebody>
-<key_value_pair>::= <PAIR_START> <key> < value> <PAIR_END>
-<key>			::=
 
 <expression> ::= <term> | <term> + <term>
 <term> ::= <fac> | <fac> * <fac>
 <fac> := sfac | <expresion>
 <sfac> ::= <string>
 */
-
-class DecryptedLine {
-    companion object {
-        var lineNumber: Int = 0
-        var linekey: String? = null
-        var key_value_pairs: kotlin.collections.MutableMap<String, String>? =
-            kotlin.collections.HashMap<String, String>()
-    }
-}
 
 class MachineParser {
     constructor()
@@ -54,14 +38,12 @@ class MachineParser {
     data class SData(val typ: SymbolType, val name: String, val cat: Category) {}
 
     companion object {
-
         private var symIn = SymbolStruc(NONE, "")
         var cursor: Int = 0
         var errorsPresent: Boolean = false
         var infixString: String = ""
         var rpnString: String = ""
         const val errorLog: String = "logx.txt"
-        val test = HASHTAG
         var specials = HashMap<Char, SData>()
         private val separatorNames = HashMap<SymbolType, String>()
         var errorsLogged: Int = 0
@@ -115,15 +97,17 @@ class MachineParser {
         }
 
         private fun term(){
-            rpnString += readSymbol(STRING).content
-            rpnString += " "
-//            factor()
+            factor()
             restOfTerm()
         }
 
+
+//        rpnString += readSymbol(STRING).content
+//        rpnString += " "
+
         private fun restOfExpression(){
             val psym:SymbolStruc = readSymbol(PLUS, ADF_END)
-            if (psym.typ != PLUS) return
+            if (psym.typ != PLUS) return                            //rewind cursor!
             expression()
             rpnString += "ADD "
         }
@@ -171,7 +155,7 @@ class MachineParser {
             val expectedList = expected.contentToString()
             errorsPresent = true
             errorsLogged++
-            println("SEPARATOR ERROR in line ${DecryptedLine.lineNumber} at cursor $cursor char $c ==> < $expectedList >")
+            println("SEPARATOR ERROR in line at cursor $cursor char $c ==> < $expectedList >")
             return symIn
 //            throw IllegalArgumentException("separator error: < $expectedList >");
         }
