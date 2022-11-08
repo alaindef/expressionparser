@@ -1,7 +1,5 @@
 import MachineParser.SymbolType.*
-import java.io.File
-import java.time.LocalDate
-import java.time.LocalDateTime
+import java.io.IOError
 
 /* Backus Naur:
 <symbol>	::= <HASHTAG> | <LINEENDKEY> | <PAIR_START> | <PAIR_END> | <STRING> | <ETX> | <STRING>
@@ -11,6 +9,11 @@ import java.time.LocalDateTime
 <linebody>		::= <key_value_pair> | <key_value_pair> <linebody>
 <key_value_pair>::= <PAIR_START> <key> < value> <PAIR_END>
 <key>			::=
+
+<expression> ::= <term> | <term> + <term>
+<term> ::= <fac> | <fac> * <fac>
+<fac> := sfac | <expresion>
+<sfac> ::= <string>
 */
 
 class DecryptedLine {
@@ -36,6 +39,8 @@ class MachineParser {
         LINEKEYEND(64),
         PAIR_START(128),
         PAIR_END(256),
+        PLUS(200),
+        TIMES(201),
         ADF_END(512)
     }
 
@@ -53,7 +58,8 @@ class MachineParser {
         private var symIn = SymbolStruc(NONE, "")
         var cursor: Int = 0
         var errorsPresent: Boolean = false
-        var inputLine: String = ""
+        var infixString: String = ""
+        var rpnString: String = ""
         const val errorLog: String = "logx.txt"
         val test = HASHTAG
         var specials = HashMap<Char, SData>()
@@ -62,7 +68,8 @@ class MachineParser {
 
         init {
             specials['#'] = SData(HASHTAG, "HASHTAG", Category.SEPARATOR)
-            specials[':'] = SData(LINEKEYEND, "LINEKEYEND", Category.SEPARATOR)
+            specials['+'] = SData(PLUS, "PLUS", Category.SEPARATOR)
+            specials['*'] = SData(LINEKEYEND, "TIMES", Category.SEPARATOR)
             specials['('] = SData(PAIR_START, "PAIR_START", Category.SEPARATOR)
             specials[')'] = SData(PAIR_END, "PAIR_END", Category.SEPARATOR)
             specials[' '] = SData(BLANK, "BLANK", Category.SKIP)
@@ -77,99 +84,95 @@ class MachineParser {
             }
         }
 
-        fun parseLine(s: String, lineNumber: Int) {
+        fun parse(s: String) {
             cursor = 0
-            inputLine = s
+            infixString = s
             errorsPresent = false
-            DecryptedLine.lineNumber = lineNumber
-            DecryptedLine.linekey = ""
-            DecryptedLine.key_value_pairs?.clear()
             println("_________________________________________________________________________________________________")
-            println("line $lineNumber $inputLine")
+            println("input expression $infixString")
             try {
                 if (comment()) return
-                linekey()
-                linebody()
+                expression()
             } catch (e: InternalError) {
-                println("ERROR AT LINE $lineNumber: ")
+                println("PARSE ERROR: ")
                 errorsLogged++;
             }
-            if (!errorsPresent) println("DECRIPTION RESULT for line ${DecryptedLine.lineNumber} ==> ${DecryptedLine.linekey} ${DecryptedLine.key_value_pairs} ")
+            if (!errorsPresent) println("RPN: $rpnString")
             println("$errorsLogged errors logged")
         }
 
 
-        fun comment(): Boolean {
-
-            readSymbol(STRING, HASHTAG)
-            if (symIn.typ == HASHTAG) return true
+        private fun comment(): Boolean {
+            val psym:SymbolStruc = readSymbol(STRING, HASHTAG)
+            if (psym.typ == HASHTAG) return true
             cursor = 0                              //do not start line at cursor=1 !
             return false
         }
 
-        private fun linekey() {
-            readSymbol(STRING);
-            DecryptedLine.linekey = symIn?.content;
-            readSymbol(LINEKEYEND);                    //expected symbol LINEKEYEND
+        private fun expression() {
+            term()
+            restOfExpression()
         }
 
-        private fun linebody() {
-            if (keyValuePair())
-                linebody()
+        private fun term(){
+            rpnString += readSymbol(STRING).content
+            rpnString += " "
+//            factor()
+            restOfTerm()
         }
 
-        private fun keyValuePair(): Boolean {
-            readSymbol(RET, ETX, PAIR_START, ADF_END)
-            if ((symIn.typ == ETX) or (symIn.typ == RET) or (symIn.typ == ADF_END)) return false;            //end of line reached
-            readSymbol(STRING)
-            var mapKey = symIn?.content                         //key
-            readSymbol(STRING)
-            var mapValue = symIn?.content                       //first value
-            readSymbol(STRING, PAIR_END)
-            while (symIn!!.typ == STRING) {
-                mapValue = mapValue + " " + symIn!!.content;    //remaining values for this key
-                readSymbol()                                    //do not check symbol as it can be ambiguous
-            }
-            DecryptedLine.key_value_pairs?.put(mapKey, mapValue)
-//            println("keyvaluepair $mapKey  $mapValue")
-            return true;
+        private fun restOfExpression(){
+            val psym:SymbolStruc = readSymbol(PLUS, ADF_END)
+            if (psym.typ != PLUS) return
+            expression()
+            rpnString += "ADD "
         }
 
-        private fun readSymbol(vararg expected: SymbolType) {
-            if (cursor >= inputLine.length) {
+        private fun factor(){
+            rpnString += readSymbol(STRING).content
+            rpnString += " "
+        }
+        private fun restOfTerm(){
+
+        }
+
+        @kotlin.jvm.Throws(IOError::class)
+        fun readSymbol(vararg expected: SymbolType): SymbolStruc{
+
+            if (cursor >= infixString.length) {
 //                println("CURSOR TOO FAR")
-                return
+                return symIn
             }
-            var c = inputLine[cursor]
+            var c = infixString[cursor]
             if (specials.keys.count { it == c } == 0) {         //c not a key, so is part of a string
-                symIn!!.typ = STRING;
+                symIn.typ = STRING;
                 var s = "";
-                c = inputLine[cursor]
+                c = infixString[cursor]
                 while (specials.keys.count { it == c } == 0) {  //while c is not a special char
                     s += c;
                     cursor++
-                    c = inputLine[cursor]
+                    c = infixString[cursor]
                 }
-                symIn!!.content = s
+                symIn.content = s
             } else if (specials[c]?.cat == Category.SKIP) {     //special char can be skipped
                 cursor++
                 readSymbol()                 //readsymbol advances the cursor
             } else {                                            //we have a separator
-                symIn!!.typ = specials[c]!!.typ                 //the special character becomes the typ
-                symIn!!.content = c.toString()
+                symIn.typ = specials[c]!!.typ                 //the special character becomes the typ
+                symIn.content = c.toString()
                 cursor++
             }
             if (expected.isEmpty()) {
-                return        //default, we do not complain
+                return symIn       //default, we do not complain
             }
             if (symIn.typ in expected) {
-                return
+                return symIn
             }            //check on expected char is ok, no complaints
             val expectedList = expected.contentToString()
             errorsPresent = true
             errorsLogged++
             println("SEPARATOR ERROR in line ${DecryptedLine.lineNumber} at cursor $cursor char $c ==> < $expectedList >")
-            return
+            return symIn
 //            throw IllegalArgumentException("separator error: < $expectedList >");
         }
     }

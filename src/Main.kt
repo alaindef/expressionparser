@@ -12,9 +12,8 @@ object Main {
 
         inputStream.bufferedReader().forEachLine { lineList.add(it) }
         var lineNum = 0
-        var curs = 0
         lineList.forEach{
-            MachineParser.parseLine(it, lineNum)
+            MachineParser.parse(it)
             MachineParser.cursor = 0
             lineNum++
         }
@@ -23,10 +22,10 @@ object Main {
     fun main(args: Array<String>) {
 
 //        val msg: InputStream = File(this.msgIn).inputStream()
-        parseFile()
+//        parseFile()
 
-//        MachineParser.parseLine("====!",17)
-//        MachineParser.parseLine(">>>> 254!",17)
+        MachineParser.parse("13+2+5!")
+//        MachineParser.parse("#commetaar dd")
 //        MachineParser.parseLine("sha:(kie valju) (kar rotzak) (kleur blauw)!",17)
 //        println("the end: decrypted = ${DecryptedLine.linekey} ${DecryptedLine.lineNumber} ${DecryptedLine.key_value_pairs} ")
     }
