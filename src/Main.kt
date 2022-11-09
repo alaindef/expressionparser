@@ -26,7 +26,9 @@ object Main {
 //        val msg: InputStream = File(this.msgIn).inputStream()
 //        parseFile()
 
-        MachineParser.parseLine("13+2+5!")
+        MachineParser.parseLine("a > 2 ? 10 : 20\n")
+//        MachineParser.parseLine("13+2*3+5!")
+//        MachineParser.parseLine("13*333!")
 //        MachineParser.parse("#commetaar dd")
 //        MachineParser.parseLine("sha:(kie valju) (kar rotzak) (kleur blauw)!",17)
     }

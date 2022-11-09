@@ -2,7 +2,6 @@ import Kars.KarType.*
 import Kars.SymType.*
 import Kars.*
 import Kars.Companion.kartyp
-import java.io.IOError
 
 /* Backus Naur:
 <expression> ::= <term> | <term> + <term>
@@ -63,8 +62,10 @@ class MachineParser {
         private fun restOfExpression() {
             val psym: Symbol = readSymbol(OPERATOR,EOT)
             if (psym.typ != OPERATOR) return                            //rewind cursor!
-            expression()
-            textOut += "ADD "
+            val mem = psym.content
+            term()
+            textOut += "$mem "
+            restOfExpression()
         }
 
         private fun factor() {
@@ -76,7 +77,7 @@ class MachineParser {
 
         }
 
-        @kotlin.jvm.Throws(IOError::class)
+        @kotlin.jvm.Throws(IllegalArgumentException::class)
         fun readSymbol(vararg expected: SymType): Symbol {
 
             if (cursor >= textIn.length) return symIn
@@ -99,10 +100,10 @@ class MachineParser {
                     cursor++
                     readSymbol()                                //readsymbol advances the cursor
                 }
-                ADF_END, ETX, LF, CR, OTHER  -> return symIn
+                EXCLAM, ETX, LF, CR, OTHER  -> return symIn
                 else -> {                                     //we have a separator
                     symIn.typ = OPERATOR                        //the special character becomes the typ
-                    symIn.content = c.toString()
+                    symIn.content = kartyp[c.code].pp
                     cursor++
 
                 }

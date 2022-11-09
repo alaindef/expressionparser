@@ -2,20 +2,25 @@ import Kars.KarType.*
 
 data class Kars(val kar: Char) {
 
-    enum class KarType() {
-        ETX,
-        LF,
-        TAB,
-        BLANK,
-        HASHTAG,
-        PAR_LEFT,
-        PAR_RIGHT,
-        TIMES,
-        PLUS,
-        KAR,
-        CR,
-        OTHER,
-        ADF_END
+    enum class KarType(val pp: String) {
+        ETX("ETX"),
+        LF("LF"),
+        TAB("TAB"),
+        BLANK("BLANK"),
+        HASHTAG("HASH"),
+        PAR_LEFT("PL"),
+        PAR_RIGHT("PR"),
+        TIMES("[*]"),
+        PLUS("[+]"),
+        GT("[>]"),
+        LT("[<]"),
+        COLON("[:]"),
+//        QUESTION("[?]"),
+        QUESTION(""),
+        KAR("C"),
+        CR("CR"),
+        OTHER("OTHER"),
+        EXCLAM("THE_END")
     }
 
     enum class SymType {
@@ -45,12 +50,16 @@ data class Kars(val kar: Char) {
             kartyp[11] = TAB
             kartyp[13] = CR
             kartyp[32] = BLANK
-            kartyp[33] = ADF_END
+            kartyp[33] = EXCLAM
             kartyp[35] = HASHTAG
             kartyp[40] = PAR_LEFT
             kartyp[41] = PAR_RIGHT
             kartyp[42] = TIMES
             kartyp[43] = PLUS
+            kartyp[58] = COLON
+            kartyp[60] = LT
+            kartyp[62] = GT
+            kartyp[63] = QUESTION
         }
 
         fun kartyp(char: Char): KarType {
