@@ -2,7 +2,7 @@
 .gradle
 /local.properties
 # User-specific configurations
-out/
+out/*
 .DS_Store
 /build
 /captures

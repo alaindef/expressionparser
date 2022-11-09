@@ -1,8 +1,10 @@
-import MachineParser.SymbolType.*
+import Kars.KarType.*
+import Kars.SymType.*
+import Kars.*
+import Kars.Companion.kartyp
 import java.io.IOError
 
 /* Backus Naur:
-
 <expression> ::= <term> | <term> + <term>
 <term> ::= <fac> | <fac> * <fac>
 <fac> := sfac | <expresion>
@@ -12,82 +14,39 @@ import java.io.IOError
 class MachineParser {
     constructor()
 
-    enum class SymbolType(val symCode: Int) {
-        NONE(0),
-        BLANK(1),
-        TAB(2),
-        STRING(4),
-        ETX(8),
-        RET(16),
-        HASHTAG(32),
-        LINEKEYEND(64),
-        PAIR_START(128),
-        PAIR_END(256),
-        PLUS(200),
-        TIMES(201),
-        ADF_END(512)
-    }
-
-    enum class Category { SEPARATOR, SKIP, NOTHING }
-
-    data class SymbolStruc(
-        var typ: MachineParser.SymbolType = MachineParser.SymbolType.NONE,
-        var content: String
-    )
-
-    data class SData(val typ: SymbolType, val name: String, val cat: Category) {}
+    data class SData(val typ: KarType, val name: String, val cat: Category) {}
 
     companion object {
-        private var symIn = SymbolStruc(NONE, "")
+        private var symIn = Symbol(NONE, "")
         var cursor: Int = 0
         var errorsPresent: Boolean = false
-        var infixString: String = ""
-        var rpnString: String = ""
+        var textIn: String = ""
+        var textOut: String = ""
         const val errorLog: String = "logx.txt"
-        var specials = HashMap<Char, SData>()
-        private val separatorNames = HashMap<SymbolType, String>()
+        private val separatorNames = HashMap<KarType, String>()
         var errorsLogged: Int = 0
-
-        init {
-            specials['#'] = SData(HASHTAG, "HASHTAG", Category.SEPARATOR)
-            specials['+'] = SData(PLUS, "PLUS", Category.SEPARATOR)
-            specials['*'] = SData(LINEKEYEND, "TIMES", Category.SEPARATOR)
-            specials['('] = SData(PAIR_START, "PAIR_START", Category.SEPARATOR)
-            specials[')'] = SData(PAIR_END, "PAIR_END", Category.SEPARATOR)
-            specials[' '] = SData(BLANK, "BLANK", Category.SKIP)
-            specials['\t'] = SData(TAB, "TAB", Category.SKIP)
-            specials['\u0002'] = SData(STRING, "STRING", Category.NOTHING)//ADF !cpp
-            specials['\u0000'] = SData(ETX, "ETX", Category.SEPARATOR) //ADF !cpp
-            specials['\r'] = SData(RET, "RET", Category.SEPARATOR)
-            specials['!'] = SData(ADF_END, "RET", Category.SEPARATOR)
-
-            for (k in specials.keys) {
-                separatorNames[specials[k]!!.typ] = specials[k]!!.cat.toString()
-            }
-        }
-
-        fun parse(s: String) {
+        fun parseLine(s: String) {
             cursor = 0
-            infixString = s
+            textIn = s
             errorsPresent = false
             println("_________________________________________________________________________________________________")
-            println("input expression $infixString")
+            println("textIn =  $textIn")
             try {
                 if (comment()) return
                 expression()
-            } catch (e: InternalError) {
-                println("PARSE ERROR: ")
+            } catch (e: IllegalArgumentException) {
+                println("PARSE ERROR: ${e.message}")
                 errorsLogged++;
             }
-            if (!errorsPresent) println("RPN: $rpnString")
+            if (!errorsPresent) println("RPN: $textOut")
             println("$errorsLogged errors logged")
         }
 
-
         private fun comment(): Boolean {
-            val psym:SymbolStruc = readSymbol(STRING, HASHTAG)
-            if (psym.typ == HASHTAG) return true
+            val psym: Symbol = readSymbol()
+            if (psym.typ == COMMENT) return true
             cursor = 0                              //do not start line at cursor=1 !
+            symIn = Symbol(NONE, "")
             return false
         }
 
@@ -96,68 +55,65 @@ class MachineParser {
             restOfExpression()
         }
 
-        private fun term(){
+        private fun term() {
             factor()
             restOfTerm()
         }
 
-
-//        rpnString += readSymbol(STRING).content
-//        rpnString += " "
-
-        private fun restOfExpression(){
-            val psym:SymbolStruc = readSymbol(PLUS, ADF_END)
-            if (psym.typ != PLUS) return                            //rewind cursor!
+        private fun restOfExpression() {
+            val psym: Symbol = readSymbol(OPERATOR,EOT)
+            if (psym.typ != OPERATOR) return                            //rewind cursor!
             expression()
-            rpnString += "ADD "
+            textOut += "ADD "
         }
 
-        private fun factor(){
-            rpnString += readSymbol(STRING).content
-            rpnString += " "
+        private fun factor() {
+            textOut += readSymbol().content
+            textOut += " "
         }
-        private fun restOfTerm(){
+
+        private fun restOfTerm() {
 
         }
 
         @kotlin.jvm.Throws(IOError::class)
-        fun readSymbol(vararg expected: SymbolType): SymbolStruc{
+        fun readSymbol(vararg expected: SymType): Symbol {
 
-            if (cursor >= infixString.length) {
-//                println("CURSOR TOO FAR")
-                return symIn
-            }
-            var c = infixString[cursor]
-            if (specials.keys.count { it == c } == 0) {         //c not a key, so is part of a string
-                symIn.typ = STRING;
-                var s = "";
-                c = infixString[cursor]
-                while (specials.keys.count { it == c } == 0) {  //while c is not a special char
-                    s += c;
-                    cursor++
-                    c = infixString[cursor]
+            if (cursor >= textIn.length) return symIn
+            var c = textIn[cursor]
+            val tup = kartyp(c)
+            when (kartyp(c)) {
+                KAR -> {                            //c is a KAR, so we're building a string
+                    symIn.typ = VAR;
+                    var s = "";
+                    c = textIn[cursor]
+                    while (kartyp(c) == KAR) {
+                        s += c;
+                        cursor++
+                        c = textIn[cursor]
+                    }
+                    symIn.content = s
+
                 }
-                symIn.content = s
-            } else if (specials[c]?.cat == Category.SKIP) {     //special char can be skipped
-                cursor++
-                readSymbol()                 //readsymbol advances the cursor
-            } else {                                            //we have a separator
-                symIn.typ = specials[c]!!.typ                 //the special character becomes the typ
-                symIn.content = c.toString()
-                cursor++
+                BLANK, TAB -> {  //special char can be skipped
+                    cursor++
+                    readSymbol()                                //readsymbol advances the cursor
+                }
+                ADF_END, ETX, LF, CR, OTHER  -> return symIn
+                else -> {                                     //we have a separator
+                    symIn.typ = OPERATOR                        //the special character becomes the typ
+                    symIn.content = c.toString()
+                    cursor++
+
+                }
             }
-            if (expected.isEmpty()) {
-                return symIn       //default, we do not complain
-            }
-            if (symIn.typ in expected) {
-                return symIn
-            }            //check on expected char is ok, no complaints
+            if (expected.isEmpty()) return symIn            //default, we do not complain
+            if (symIn.typ in expected) return symIn         //check on expected char is ok, no complaints
             val expectedList = expected.contentToString()
             errorsPresent = true
             errorsLogged++
-            println("SEPARATOR ERROR in line at cursor $cursor char $c ==> < $expectedList >")
+            throw IllegalArgumentException("SEPARATOR in line at cursor $cursor char $c ==> < $expectedList >");
             return symIn
-//            throw IllegalArgumentException("separator error: < $expectedList >");
         }
     }
 }
