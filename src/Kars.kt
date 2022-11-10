@@ -8,8 +8,8 @@ data class Kars(val kar: Char) {
         TAB("TAB"),
         BLANK("BLANK"),
         HASHTAG("HASH"),
-        PAR_LEFT("PL"),
-        PAR_RIGHT("PR"),
+        PAR_LEFT("PAR_LEFT"),
+        PAR_RIGHT("PAR_RIGHT"),
         TIMES("[*]"),
         PLUS("[+]"),
         GT("[>]"),
@@ -26,11 +26,14 @@ data class Kars(val kar: Char) {
     enum class SymType {
         COMMENT,
         VAR,
-        OPERATOR,
+        OPERATOR_F,                  //fac   <> fac
+        OPERATOR_T,                  //term  <> term
         PAIR_START,
         PAIR_END,
         EOT,
-        NONE
+        NONE;
+        companion object {         //https://itecnote.com/tecnote/kotlin-how-to-create-an-enum-from-an-int-in-kotlin/
+            fun fromInt(value: Int) = SymType.values() }
     }
 
     enum class Category { SEPARATOR, SKIP, NOTHING }
