@@ -20,43 +20,63 @@ class ExpressionParser {
 
     companion object {
         private var symIn = Symbol(NONE, "")
-        var cursor: Int = 0
-        var errorsPresent: Boolean = false
+        private var cursor: Int = 0
         var textIn: String = ""
         var textOut: String = ""
-        const val errorLog: String = "logx.txt"
-        private val separatorNames = HashMap<KarType, String>()
-        var errorsLogged: Int = 0
-        private var symList = Array(256) { Symbol(NONE, "") }
+        private var symList = Array(256) { Symbol(EOT, "") }
+        var errorLevel = 1
+        private const val errorLog: String = "logx.txt"
+        private var errorsLogged: Int = 0
+        private var errorsPresent: Boolean = false
         fun parseExp(s: String) {
-            textIn = s
+            textIn = "$s!"
             pass1()
             pass2()
         }
 
-        private fun pass1() {
+        private fun clear() {
+            cursor = 0
+            errorsLogged = 0
+            errorsPresent = false
+            textOut = ""
+            for (i in 0..255) {
+                symList[i] = Symbol(EOT, "")
+            }
+        }
+
+        fun pass1() {
 //            input: textIn, output: symList
+            clear()
             cursor = 0
             var symLocation = 0
             errorsPresent = false
-            println("textIn =  $textIn")
+            reportln("textIn =  $textIn")
             do {
                 symIn = makeSymbol()
                 symList[symLocation] = Symbol(symIn.typ, symIn.content)
                 symLocation++
             } while (symIn.typ != EOT)
-            for (element in symList) {if (element.typ == NONE) {println();break} else print("${element.typ} ")}
-            for (element in symList) {if (element.typ == NONE) {println();break} else print("${element.content} ")}
+            for (element in symList) {
+                if ((element.typ == NONE) or (element.typ == EOT)) {
+                    println();break
+                } else report("${element.typ} ")
+            }
+            for (element in symList) {
+                if (element.typ == NONE) {
+                    println();break
+                } else report("${element.content} ")
+            }
         }
 
-        private fun pass2() {
+        fun pass2() {
             cursor = 0
             errorsPresent = false
 
             println("_________________________________________________________________________________________________")
             try {
 //                if (comment()) return
-                symIn = getSymbol()
+                symIn = nextSymbol()
+//                term()
                 expression()
             } catch (e: IllegalArgumentException) {
                 println("PARSE ERROR: ${e.message}")
@@ -66,7 +86,7 @@ class ExpressionParser {
         }
 
         private fun comment(): Boolean {
-            val psym: Symbol = getSymbol()
+            val psym: Symbol = nextSymbol()
             if (psym.typ == COMMENT) return true
             cursor = 0                              //do not start line at cursor=1 !
             symIn = Symbol(NONE, "")
@@ -74,58 +94,50 @@ class ExpressionParser {
         }
 
         private fun expression() {
+            bexpression()
             term()
-            restOfExpression()
+            if (isa(symIn, OPERATOR_3)) {
+                val save = symIn
+                symIn = nextSymbol();
+                expression();
+                push(save)
+            }
+        }
+
+        private fun bexpression() {
+            if (symIn.typ == PAIR_START) {
+                symIn = nextSymbol()
+                expression()
+                if (symIn.typ == PAIR_END) {
+                    symIn = nextSymbol()
+                } else
+                    println("PAIR END ERROR")
+            }
+        }
+
+        private fun isa(sym: Symbol, vararg op: SymType): Boolean {
+            return (sym.typ in op)
         }
 
         private fun term() {
             factor()
-            restOfTerm()
-        }
-
-        private fun restOfExpression() {
-//            if (symIn.typ == PAIR_END) restOfExpression()
-            val save = symIn
-            if (symIn.typ != OPERATOR_T) return
-            symIn = getSymbol(OPERATOR_T, EOT, PAIR_END)
-            term()
-            push(save)
-            restOfExpression()
-        }
-
-        private fun restOfExpression1() {
-            if (symIn.typ == PAIR_END) restOfExpression1()
-            val psym: Symbol = getSymbol(OPERATOR_T, EOT, PAIR_END)
-            if (psym.typ != OPERATOR_T) return
-            val mem = psym.content
-            term()
-            textOut += "$mem "
-            restOfExpression1()
+            if (isa(symIn, OPERATOR_2)) {
+                val save = symIn
+                symIn = nextSymbol()
+                term()
+                push(save)
+            }
         }
 
         private fun factor() {
-//            if (symIn.typ == EOT) return
-//            if (symIn.typ == VAR) {
-//                push(symIn)
-//                symIn = getSymbol(OPERATOR,EOT)
-//            }
-
-            push(symIn)
-            symIn = getSymbol()
+            //next symbol if success
+            if (isa(symIn, VARIABLE, LITERAL)) {
+                push(symIn)
+                symIn = nextSymbol()
+            }
         }
 
-        private fun restOfTerm() {
-            val save = symIn
-            if (symIn.typ != OPERATOR_F) return
-            symIn = getSymbol(OPERATOR_F, EOT, PAIR_END)
-            factor()
-            push(save)
-            restOfTerm()
-
-
-        }
-
-        private fun getSymbol(vararg expected: SymType): Symbol {
+        private fun nextSymbol(vararg expected: SymType): Symbol {
 //            returns the next symbol
             cursor++
             return symList[cursor - 1]
@@ -140,7 +152,7 @@ class ExpressionParser {
             val tup = kartyp(c)
             when (kartyp(c)) {
                 KAR -> {                                        //c is a KAR, so we're building a string
-                    symIn.typ = VAR;
+                    symIn.typ = VARIABLE;
                     var s = "";
                     c = textIn[cursor]
                     while (kartyp(c) == KAR) {
@@ -169,13 +181,13 @@ class ExpressionParser {
                     symIn.content = kartyp[c.code].pp
                     cursor++
                 }
-                TIMES -> {                                       //we have a separator
-                    symIn.typ = OPERATOR_T                        //the special character becomes the typ
+                TIMES,MINUS,GT,LT,EQ,COLON,QUESTION -> {                                       //we have a separator
+                    symIn.typ = OPERATOR_2                        //the special character becomes the typ
                     symIn.content = kartyp[c.code].pp
                     cursor++
                 }
-                PLUS -> {                                       //we have a separator
-                    symIn.typ = OPERATOR_F                        //the special character becomes the typ
+                PLUS,MINUS -> {                                       //we have a separator
+                    symIn.typ = OPERATOR_3                        //the special character becomes the typ
                     symIn.content = kartyp[c.code].pp
                     cursor++
                 }
@@ -202,7 +214,15 @@ class ExpressionParser {
 
         fun push(sym: Symbol) {
             textOut += " ${sym.content}"
-            println("push >>> ${sym.content}")
+            reportln("push >>> ${sym.content}")
+        }
+
+        fun report(s: String) {
+            if (errorLevel > 0) print(s)
+        }
+
+        fun reportln(s: String) {
+            if (errorLevel > 0) println(s)
         }
     }
 }

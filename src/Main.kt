@@ -9,33 +9,30 @@ object Main {
 
 
     const val msgIn: String = "msgin.txt"
-    fun parseFile() {
-        val inputStream: InputStream = File("msgin.txt").inputStream()
-        val lineList = mutableListOf<String>()
 
-        inputStream.bufferedReader().forEachLine { lineList.add(it) }
-        var lineNum = 0
-        lineList.forEach {
-            parseLine(it)
-            cursor = 0
-            lineNum++
+    private fun readFromTerminalAndParse(){
+        ExpressionParser.errorLevel = 0
+        var indi = ""
+        println("input an expression or\n! to increase report level or\n.. to quit")
+        while (true) {
+            indi = readLine() + '\n'
+            if (".." in indi) {
+                println("you stopped me.\nThanks for that, because I'm getting tired of you!")
+                return
+            }
+            if ('!' in indi) {ExpressionParser.errorLevel = 1}
+            ExpressionParser.parseExp(indi.toString())
+            indi =""
         }
     }
-
     @JvmStatic
     fun main(args: Array<String>) {
-//        MachineParser.pass1("(13 + 2*3)+(5+45)!")
+//        ExpressionParser.textIn ="(13 + 2*3)+(5+45)!"
+//        ExpressionParser.pass1()
+//readFromTerminalAndParse()
+        ExpressionParser.parseExp("a<1?2:3")
+//        ExpressionParser.parseExp("(23+1)*(3*3+2)")
 
-        ExpressionParser.parseExp("6+3*5!")
-//        ExpressionParser.test()
 
-//        val msg: InputStream = File(this.msgIn).inputStream()
-//        parseFile()
-
-//        MachineParser.parseLine("a > 2 ? 10 : 20\n")
-//        MachineParser.parseLine("(13+2*3)+(5 + 45)!")
-//        MachineParser.parseLine("13*333!")
-//        MachineParser.parse("#commetaar dd")
-//        MachineParser.parseLine("sha:(kie valju) (kar rotzak) (kleur blauw)!",17)
     }
 }

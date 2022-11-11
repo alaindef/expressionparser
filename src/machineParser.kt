@@ -51,7 +51,7 @@ class MachineParser {
             val tup = kartyp(c)
             when (kartyp(c)) {
                 KAR -> {                                        //c is a KAR, so we're building a string
-                    symIn.typ = VAR;
+                    symIn.typ = VARIABLE;
                     var s = "";
                     c = textIn[cursor]
                     while (kartyp(c) == KAR) {
@@ -129,7 +129,7 @@ class MachineParser {
 
         private fun expression() {
             val saveCursor = cursor
-            when (readSymbol(VAR, PAIR_START, PAIR_END).typ) {
+            when (readSymbol(VARIABLE, PAIR_START, PAIR_END).typ) {
                 PAIR_START -> expression()
 //                PAIR_END -> return
                 PAIR_END -> restOfExpression()
@@ -148,8 +148,8 @@ class MachineParser {
 
         private fun restOfExpression() {
             if (symIn.typ == PAIR_END) restOfExpression()
-            val psym: Symbol = readSymbol(OPERATOR_T, EOT, PAIR_END)
-            if (psym.typ != OPERATOR_T) return
+            val psym: Symbol = readSymbol(OPERATOR_3, EOT, PAIR_END)
+            if (psym.typ != OPERATOR_3) return
             val mem = psym.content
             term()
             textOut += "$mem "
@@ -175,7 +175,7 @@ class MachineParser {
             val tup = kartyp(c)
             when (kartyp(c)) {
                 KAR -> {                                        //c is a KAR, so we're building a string
-                    symIn.typ = VAR;
+                    symIn.typ = VARIABLE;
                     var s = "";
                     c = textIn[cursor]
                     while (kartyp(c) == KAR) {
@@ -202,12 +202,12 @@ class MachineParser {
                     cursor++
                 }
                 PLUS -> {
-                    symIn.typ = OPERATOR_T                        //the special character becomes the typ
+                    symIn.typ = OPERATOR_3                        //the special character becomes the typ
                     symIn.content = kartyp[c.code].pp
                     cursor++
                 }
                 TIMES -> {
-                    symIn.typ = OPERATOR_F                        //the special character becomes the typ
+                    symIn.typ = OPERATOR_2                        //the special character becomes the typ
                     symIn.content = kartyp[c.code].pp
                     cursor++
                 }

@@ -1,0 +1,6 @@
+jar {
+   manifest {
+       attributes 'Main-Class': 'parsexp'
+   }
+   from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}

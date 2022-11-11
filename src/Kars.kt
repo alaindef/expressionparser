@@ -11,12 +11,15 @@ data class Kars(val kar: Char) {
         PAR_LEFT("PAR_LEFT"),
         PAR_RIGHT("PAR_RIGHT"),
         TIMES("[*]"),
+        DIVIDE("[/]"),
         PLUS("[+]"),
+        MINUS("[-]"),
+        EQ("[=]"),
         GT("[>]"),
         LT("[<]"),
         COLON("[:]"),
-//        QUESTION("[?]"),
-        QUESTION(""),
+        QUESTION("[?]"),
+//        QUESTION(""),
         KAR("C"),
         CR("CR"),
         OTHER("OTHER"),
@@ -25,9 +28,11 @@ data class Kars(val kar: Char) {
 
     enum class SymType {
         COMMENT,
-        VAR,
-        OPERATOR_F,                  //fac   <> fac
-        OPERATOR_T,                  //term  <> term
+        VARIABLE,
+        LITERAL,                        //literal
+        OPERATOR_1,         // exp or root, https://en.wikipedia.org/wiki/Order_of_operations
+        OPERATOR_2,         // * or /, according to precedence order
+        OPERATOR_3,         // + or -
         PAIR_START,
         PAIR_END,
         EOT,
@@ -48,7 +53,7 @@ data class Kars(val kar: Char) {
             for (i in 48..57) kartyp[i] = KAR
             for (i in 65..90) kartyp[i] = KAR
             for (i in 97..122) kartyp[i] = KAR
-            kartyp[0] = ETX
+            kartyp[0]  = ETX
             kartyp[10] = LF
             kartyp[11] = TAB
             kartyp[13] = CR
@@ -59,8 +64,11 @@ data class Kars(val kar: Char) {
             kartyp[41] = PAR_RIGHT
             kartyp[42] = TIMES
             kartyp[43] = PLUS
+            kartyp[45] = MINUS
+            kartyp[47] = DIVIDE
             kartyp[58] = COLON
             kartyp[60] = LT
+            kartyp[61] = EQ
             kartyp[62] = GT
             kartyp[63] = QUESTION
         }

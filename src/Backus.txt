@@ -1,0 +1,5 @@
+expression	::= bexpression | term	    |   term		operator3	expression
+bexpression ::= LB expression RB
+term		::= factor	    | factor	    operator2	term
+factor      ::= var         | lit
+		
