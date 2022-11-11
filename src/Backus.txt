@@ -1,5 +1,15 @@
-expression	::= bexpression | term	    |   term		operator3	expression
+expression	::= term	    |   *{OP_3  term}
+term		::= factor	    |   *{OP_2  factor}
+factor      ::= var         | num                |   bexpression
 bexpression ::= LB expression RB
-term		::= factor	    | factor	    operator2	term
-factor      ::= var         | lit
+OP_3        ::= + | -
+OP_2        ::= * | / | > | < | = | ? | :
+LB          ::= (
+RB          ::= )
+letter      ::= a | b | c | ....
+digit       ::= 1 | 2 | 3 | ...
+var         ::= letter | {letter | digit}
+num         ::= {digit}
+
 		
+

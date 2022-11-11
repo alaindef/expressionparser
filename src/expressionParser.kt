@@ -4,20 +4,21 @@ import Kars.Symbol
 import Kars.*
 import Kars.Companion.kartyp
 
-/* Backus Naur:
-<expression> ::= <term> | <term> + <term>
-<term> ::= <fac> | <fac> * <fac>
-<fac> := sfac | <expresion>
-<sfac> ::= <string>
+/* Backus Naur:expression	::= term	    |   *{OP_3  term}
+term		::= factor	    |   *{OP_2  factor}
+factor      ::= var         | num                |   bexpression
+bexpression ::= LB expression RB
+OP_3        ::= + | -
+OP_2        ::= * | / | > | < | = | ? | :
+LB          ::= (
+RB          ::= )
+letter      ::= a | b | c | ....
+digit       ::= 1 | 2 | 3 | ...
+var         ::= letter | {letter | digit}
+num         ::= {digit}
 */
-data class Symbol1(var typ: SymType = SymType.NONE, var content: String)
-
 
 class ExpressionParser {
-    constructor()
-
-    data class SData(val typ: KarType, val name: String, val cat: Category) {}
-
     companion object {
         private var symIn = Symbol(NONE, "")
         private var cursor: Int = 0
@@ -56,33 +57,32 @@ class ExpressionParser {
                 symList[symLocation] = Symbol(symIn.typ, symIn.content)
                 symLocation++
             } while (symIn.typ != EOT)
+
             for (element in symList) {
                 if ((element.typ == NONE) or (element.typ == EOT)) {
-                    println();break
+                    reportln("");break
                 } else report("${element.typ} ")
             }
             for (element in symList) {
                 if (element.typ == NONE) {
-                    println();break
+                    reportln("");break
                 } else report("${element.content} ")
             }
         }
 
         fun pass2() {
+//            input: symlist, output: RPN
             cursor = 0
             errorsPresent = false
-
-            println("_________________________________________________________________________________________________")
             try {
 //                if (comment()) return
                 symIn = nextSymbol()
-//                term()
                 expression()
             } catch (e: IllegalArgumentException) {
                 println("PARSE ERROR: ${e.message}")
                 errorsLogged++;
             }
-            if (!errorsPresent) println("RPN: $textOut\n=== $errorsLogged errors logged ===")
+            if (!errorsPresent) println("RPN: $textOut   === $errorsLogged errors logged ===")
         }
 
         private fun comment(): Boolean {
@@ -94,15 +94,39 @@ class ExpressionParser {
         }
 
         private fun expression() {
-            bexpression()
             term()
-            if (isa(symIn, OPERATOR_3)) {
+            while (isa(symIn, OPERATOR_3)) {
                 val save = symIn
-                symIn = nextSymbol();
-                expression();
+                symIn = nextSymbol()
+                term()
                 push(save)
             }
         }
+
+        private fun isa(sym: Symbol, vararg op: SymType): Boolean {
+            return (sym.typ in op)
+        }
+
+        private fun term() {
+            factor()
+            while (isa(symIn, OPERATOR_2)) {
+                val save = symIn
+                symIn = nextSymbol()
+                factor()
+                push(save)
+            }
+        }
+
+        private fun factor() {
+            //next symbol if success
+            if (isa(symIn, VARIABLE, LITERAL)) {
+                push(symIn)
+                symIn = nextSymbol()
+            } else {
+                bexpression()
+            }
+        }
+
 
         private fun bexpression() {
             if (symIn.typ == PAIR_START) {
@@ -113,32 +137,10 @@ class ExpressionParser {
                 } else
                     println("PAIR END ERROR")
             }
-        }
 
-        private fun isa(sym: Symbol, vararg op: SymType): Boolean {
-            return (sym.typ in op)
-        }
-
-        private fun term() {
-            factor()
-            if (isa(symIn, OPERATOR_2)) {
-                val save = symIn
-                symIn = nextSymbol()
-                term()
-                push(save)
-            }
-        }
-
-        private fun factor() {
-            //next symbol if success
-            if (isa(symIn, VARIABLE, LITERAL)) {
-                push(symIn)
-                symIn = nextSymbol()
-            }
         }
 
         private fun nextSymbol(vararg expected: SymType): Symbol {
-//            returns the next symbol
             cursor++
             return symList[cursor - 1]
         }
@@ -181,12 +183,12 @@ class ExpressionParser {
                     symIn.content = kartyp[c.code].pp
                     cursor++
                 }
-                TIMES,MINUS,GT,LT,EQ,COLON,QUESTION -> {                                       //we have a separator
+                TIMES, DIVIDE, GT, LT, EQ, COLON, QUESTION -> {                                       //we have a separator
                     symIn.typ = OPERATOR_2                        //the special character becomes the typ
                     symIn.content = kartyp[c.code].pp
                     cursor++
                 }
-                PLUS,MINUS -> {                                       //we have a separator
+                PLUS, MINUS -> {                                       //we have a separator
                     symIn.typ = OPERATOR_3                        //the special character becomes the typ
                     symIn.content = kartyp[c.code].pp
                     cursor++

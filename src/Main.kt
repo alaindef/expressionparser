@@ -1,8 +1,5 @@
 import java.io.File
 import java.io.InputStream
-import MachineParser.*
-import MachineParser.Companion.cursor
-import MachineParser.Companion.parseLine
 import ExpressionParser
 
 object Main {
@@ -29,8 +26,9 @@ object Main {
     fun main(args: Array<String>) {
 //        ExpressionParser.textIn ="(13 + 2*3)+(5+45)!"
 //        ExpressionParser.pass1()
-//readFromTerminalAndParse()
-        ExpressionParser.parseExp("a<1?2:3")
+readFromTerminalAndParse()
+//        ExpressionParser.parseExp("1+2*(3+4)*(1+2)")
+//        ExpressionParser.parseExp("1*2?3/4")
 //        ExpressionParser.parseExp("(23+1)*(3*3+2)")
 
 
