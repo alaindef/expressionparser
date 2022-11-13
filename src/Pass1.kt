@@ -5,6 +5,7 @@ import Kars.*
 import Kars.Companion.kartyp
 import ExpressionParser.Companion.report
 import ExpressionParser.Companion.reportln
+import Kars.Companion.isaC
 
 class Pass1 {
     companion object {
@@ -55,7 +56,7 @@ class Pass1 {
             c = textIn[cursor]
             val tup = kartyp(c)
             when (kartyp(c)) {
-                KAR -> treatKar()
+                LETTER, DIGIT -> treatKar()
                 BLANK, TAB -> {  //special char can be skipped
                     cursor++
                     return makeSymbol()                                //getsymbol advances the cursor
@@ -118,7 +119,8 @@ class Pass1 {
             s += c;
             cursor++
             c = textIn[cursor]
-            while (kartyp(c) == KAR) {
+            while (isaC(c, LETTER, DIGIT)) {
+//            while ((kartyp(c) == LETTER) or (kartyp(c) == DIGIT)) {
                 s += c;
                 cursor++
                 c = textIn[cursor]

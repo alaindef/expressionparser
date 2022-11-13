@@ -20,7 +20,8 @@ data class Kars(val kar: Char) {
         COLON("[:]"),
 //        QUESTION("[?]"),
         QUESTION(""),
-        KAR("C"),
+        LETTER("L"),
+        DIGIT("D"),
         CR("CR"),
         OTHER("OTHER"),
         EXCLAM("THE_END")
@@ -50,9 +51,9 @@ data class Kars(val kar: Char) {
 //        val karcat: Array(256) {}
 
         init {
-            for (i in 48..57) kartyp[i] = KAR
-            for (i in 65..90) kartyp[i] = KAR
-            for (i in 97..122) kartyp[i] = KAR
+            for (i in 48..57) kartyp[i] = DIGIT
+            for (i in 65..90) kartyp[i] = LETTER
+            for (i in 97..122) kartyp[i] = LETTER
             kartyp[0]  = ETX
             kartyp[10] = LF
             kartyp[11] = TAB
@@ -75,6 +76,13 @@ data class Kars(val kar: Char) {
 
         fun kartyp(char: Char): KarType {
             return kartyp[char.code]
+        }
+
+        fun isa(sym: Symbol, vararg op: SymType): Boolean {
+            return (sym.typ in op)
+        }
+        fun isaC(char: Char, vararg op: KarType): Boolean {
+            return (kartyp(char) in op)
         }
     }
 }

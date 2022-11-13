@@ -1,7 +1,7 @@
 import Kars.SymType.*
 import Kars.Symbol
 import Kars.*
-import ExpressionParser.Companion.report
+import Kars.Companion.isa
 import ExpressionParser.Companion.reportln
 
 class Pass2 {
@@ -52,10 +52,6 @@ class Pass2 {
                 term()
                 push(save)
             }
-        }
-
-        private fun isa(sym: Symbol, vararg op: SymType): Boolean {
-            return (sym.typ in op)
         }
 
         private fun term() {
