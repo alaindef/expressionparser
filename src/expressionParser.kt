@@ -32,6 +32,7 @@ class ExpressionParser {
             textIn = "$s!"
             symList = Pass1.parse(s)
             textOut = Pass2.parse(symList)
+
         }
 
 
@@ -42,6 +43,5 @@ class ExpressionParser {
         fun reportln(s: String, level: Int) {
             if (level <= reportLevel) println(s)
         }
-
     }
 }

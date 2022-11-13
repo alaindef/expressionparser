@@ -3,12 +3,6 @@ object Main {
 
     const val msgIn: String = "msgin.txt"
 
-    private fun test() {
-        var a = 0
-        a = -3 + 1 - 2
-        println(a)
-    }
-
     private fun readFromTerminalAndParse(reportLevelIn:Int) {
         var reportLevelIn = 0
         var indi = ""
@@ -34,11 +28,11 @@ object Main {
 //        ExpressionParser.textIn ="(13 + 2*3)+(5+45)!"
 //        ExpressionParser.pass1()
 //        readFromTerminalAndParse(0)
-//        ExpressionParser.parseExp("-1+4!", 0)
-//        ExpressionParser.parseExp("1*2+(5-6)!",0)
-        ExpressionParser.parseExp("(23+ -a)*(-3*b+2)*-c!", 0)
+//        ExpressionParser.parseExp("a+1!", 0)
+//        ExpressionParser.parseExp("1a57 > 5 ?10+8:20!", 1)
+        ExpressionParser.parseExp("abc/?-x+b23)!", 1)
+//        ExpressionParser.parseExp("?a+b)!",1)
+//        ExpressionParser.parseExp("(23+ -a)*(-3*b+2)*-c!", 0)     //error!
 //        test()
-
-
     }
 }

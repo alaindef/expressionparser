@@ -15,7 +15,7 @@ class Pass2 {
         private var errorsLogged: Int = 0
         private var errorsPresent: Boolean = false
 
-        fun parse(s:Array<Symbol>): String {
+        fun parse(s: Array<Symbol>): String {
 //            input: symlist, output: RPN
             clear()
             symList = s
@@ -29,10 +29,8 @@ class Pass2 {
                 println("PARSE ERROR: ${e.message}")
                 errorsLogged++;
             }
-            val neut=0
-            println("from pass2 once")
-            println("from pass2 twice $neut")
-            if (!errorsPresent) println("RPN: $textOut   === $errorsLogged errors logged ===")
+            if (!errorsPresent)
+                println("RPN: $textOut   === $errorsLogged errors logged ===")
             return textOut
         }
 
@@ -46,7 +44,7 @@ class Pass2 {
 
         private fun expression() {
             term()
-            while (isa(symIn, OPERATOR_3)) {
+            while (isa(symIn, OPERATOR_6)) {
                 val save = symIn
                 symIn = nextSymbol()
                 term()
@@ -55,8 +53,27 @@ class Pass2 {
         }
 
         private fun term() {
+            if (isa(symIn, OPERATOR_3)) {
+                val save = symIn
+                symIn = nextSymbol()
+                factor()
+                val code = 177
+
+                if (save.content == "[-]") push(Symbol(OPERATOR_3, "${code.toChar()}"))
+            }
             factor()
-            while (isa(symIn, OPERATOR_2)) {
+            while (isa(symIn, OPERATOR_5)) {
+                val save = symIn
+                symIn = nextSymbol()
+                factor()
+                push(save)
+            }
+        }
+
+        private fun term1() {
+            if (isa(symIn, OPERATOR_6)) push(Symbol(VARIABLE, "0"))      // things like (-a+b)
+            factor()
+            while (isa(symIn, OPERATOR_5)) {
                 val save = symIn
                 symIn = nextSymbol()
                 factor()
@@ -66,25 +83,38 @@ class Pass2 {
 
         private fun factor() {
             //next symbol if success
-            if (isa(symIn, VARIABLE, LITERAL)) {
-                push(symIn)
-                symIn = nextSymbol()
-            } else {
-                bexpression()
+            when (symIn.typ) {
+                VARIABLE, LITERAL -> {
+                    push(symIn)
+                    symIn = nextSymbol()
+                }
+                else -> bExpression()
+
+//                ELVIS_Q -> elvisExpression()
             }
         }
 
 
-        private fun bexpression() {
-            if (symIn.typ == PAIR_START) {
+        private fun bExpression() {
+            if (isa(symIn, PAIR_START,ELVIS_Q)) {
                 symIn = nextSymbol()
                 expression()
-                if (symIn.typ == PAIR_END) {
+                if (isa(symIn,PAIR_END,ELVIS_C)) {
                     symIn = nextSymbol()
                 } else
                     println("PAIR END ERROR")
             }
+        }
 
+        private fun elvisExpression() {
+            if (symIn.typ == ELVIS_Q) {
+                symIn = nextSymbol()
+                expression()
+                if (symIn.typ == ELVIS_C) {
+                    symIn = nextSymbol()
+                } else
+                    println("ELVIS ERROR")
+            }
         }
 
         private fun nextSymbol(vararg expected: SymType): Symbol {
@@ -95,14 +125,14 @@ class Pass2 {
 
         fun push(sym: Symbol) {
             textOut += " ${sym.content}"
-            reportln("push >>> ${sym.content}", 1)
+            reportln("push >>> ${sym.content}", 2)
         }
 
         private fun clear() {
             cursor = 0
             errorsLogged = 0
             errorsPresent = false
-            textOut =""
+            textOut = ""
             for (i in 0..255) {
                 symList[i] = Symbol(EOT, "")
             }

@@ -37,14 +37,16 @@ class Pass1 {
                 if ((element.typ == NONE) or (element.typ == EOT)) {
                     ExpressionParser.reportln("", 0)
                     break
-                } else report("${element.typ} ", 0)
+                } else report("${element.typ.toString().padEnd(11)} ", 1)
             }
             for (element in symList) {
                 if (element.typ == NONE) {
                     reportln("", 1)
                     break
-                } else report("${element.content} ", 0)
+                } else report("${element.content.toString().padEnd(11)} ", 1)
             }
+            reportln("", 1)
+
             return symList
         }
 
@@ -54,51 +56,71 @@ class Pass1 {
             }
             if (cursor >= textIn.length) return symIn
             c = textIn[cursor]
-            val tup = kartyp(c)
-            when (kartyp(c)) {
-                LETTER, DIGIT -> treatKar()
-                BLANK, TAB -> {  //special char can be skipped
-                    cursor++
-                    return makeSymbol()                                //getsymbol advances the cursor
+            if (isaC(c, BLANK, TAB)) {
+                cursor++
+                return makeSymbol()                                //getsymbol advances the cursor
+            }
+            val tup = kartyp[c.code]
+            symIn.content = tup.pp
+            when (tup) {
+                LETTER, DIGIT ->{                              //c is a KAR, so we're building a string
+                    var s = "";
+                    while (isaC(c, LETTER, DIGIT)) {
+                        s += c;
+                        cursor++
+                        c = textIn[cursor]
+                    }
+                    symIn.typ = VARIABLE;
+                    symIn.content = s
+                    cursor--
                 }
                 EXCLAM, ETX, LF, CR, OTHER -> {
                     symIn.typ = EOT
-                    symIn.content = kartyp[c.code].pp
                     return symIn
                 }
                 PAR_LEFT -> {
                     symIn.typ = PAIR_START                      //the special character becomes the typ
-                    symIn.content = kartyp[c.code].pp
-                    cursor++
                 }
                 PAR_RIGHT -> {
                     symIn.typ = PAIR_END                        //the special character becomes the typ
-                    symIn.content = kartyp[c.code].pp
-                    cursor++
                 }
-                TIMES, DIVIDE, GT, LT, EQ, COLON, QUESTION -> {
-                    if (symLocation > 0) {
-                        //we have a separator
-                        symIn.typ = OPERATOR_2                        //the special character becomes the typ
-                        symIn.content = kartyp[c.code].pp
-                        cursor++
+                TIMES, DIVIDE, GT, LT, EQ -> {
+                    if (symLocation > 0) {                      //we have a separator
+                        symIn.typ = OPERATOR_5                  //the special character becomes the typ
                     }
                 }
+                QUESTION -> {
+                        symIn.typ = PAIR_START                  //the special character becomes the typ
+                }
+                COLON -> {
+                        symIn.typ = PAIR_END                  //the special character becomes the typ
+                }
                 PLUS, MINUS -> {
-                    if (symLocation > 0) {if (symList[symLocation - 1].typ == VARIABLE) {//we have a separator
-                        symIn.typ = OPERATOR_3                        //the special character becomes the typ
-                        symIn.content = kartyp[c.code].pp
+                    if (symLocation == 0) {
+                        symIn.typ = OPERATOR_3
+                    } else if (isaC(textIn[cursor - 1], TIMES, DIVIDE, PLUS, MINUS, PAR_LEFT, QUESTION)) {
+                        // we are not adding to the previous, this is a unary operator
+                        symIn.typ = OPERATOR_3
+                    } else symIn.typ = OPERATOR_6
+                }
+                TEST -> {                             //c is a KAR, so we're building a string
+                    var s = "";
+                    s += c;
+                    cursor++
+                    c = textIn[cursor]
+                    while (isaC(c, LETTER, DIGIT)) {
+                        s += c;
                         cursor++
-                    } else treatKar() }
-                    else treatKar()
+                        c = textIn[cursor]
+                    }
+                    symIn.typ = VARIABLE;
+                    symIn.content = s
                 }
                 else -> {                                       //we have a separator
                     symIn.typ = NONE                      //the special character becomes the typ
-                    symIn.content = kartyp[c.code].pp
-                    cursor++
-
                 }
             }
+            cursor++
             if (expected.isEmpty()) return symIn            //default, we do not complain
             if (symIn.typ in expected) return symIn         //check on expected char is ok, no complaints
             val expectedList = expected.contentToString()
@@ -120,7 +142,6 @@ class Pass1 {
             cursor++
             c = textIn[cursor]
             while (isaC(c, LETTER, DIGIT)) {
-//            while ((kartyp(c) == LETTER) or (kartyp(c) == DIGIT)) {
                 s += c;
                 cursor++
                 c = textIn[cursor]

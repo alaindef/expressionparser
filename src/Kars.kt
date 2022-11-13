@@ -18,28 +18,37 @@ data class Kars(val kar: Char) {
         GT("[>]"),
         LT("[<]"),
         COLON("[:]"),
-//        QUESTION("[?]"),
-        QUESTION(""),
+        QUESTION("[?]"),
+
+        //        QUESTION(""),
         LETTER("L"),
         DIGIT("D"),
         CR("CR"),
         OTHER("OTHER"),
-        EXCLAM("THE_END")
+        EXCLAM("THE_END"),
+        TEST("TEST")
     }
 
     enum class SymType {
         COMMENT,
         VARIABLE,
-        LITERAL,                        //literal
-        OPERATOR_1,         // exp or root, https://en.wikipedia.org/wiki/Order_of_operations
-        OPERATOR_2,         // * or /, according to precedence order
-        OPERATOR_3,         // + or -
+        LITERAL,            //literal
+        OPERATOR_3,         // https://en.cppreference.com/w/cpp/language/operator_precedence#cite_note-2
+
+        // of https://en.wikipedia.org/wiki/Order_of_operations
+        OPERATOR_5,         // * or /, according to precedence order
+        OPERATOR_6,         // + or -
+        OPERATOR_16,        // like elvis
+        ELVIS_Q,
+        ELVIS_C,
         PAIR_START,
         PAIR_END,
         EOT,
         NONE;
+
         companion object {         //https://itecnote.com/tecnote/kotlin-how-to-create-an-enum-from-an-int-in-kotlin/
-            fun fromInt(value: Int) = SymType.values() }
+            fun fromInt(value: Int) = SymType.values()
+        }
     }
 
     enum class Category { SEPARATOR, SKIP, NOTHING }
@@ -48,13 +57,12 @@ data class Kars(val kar: Char) {
     companion object {
         val karname: CharArray = CharArray(256)
         var kartyp = Array(256) { OTHER }
-//        val karcat: Array(256) {}
 
         init {
             for (i in 48..57) kartyp[i] = DIGIT
             for (i in 65..90) kartyp[i] = LETTER
             for (i in 97..122) kartyp[i] = LETTER
-            kartyp[0]  = ETX
+            kartyp[0] = ETX
             kartyp[10] = LF
             kartyp[11] = TAB
             kartyp[13] = CR
@@ -74,15 +82,12 @@ data class Kars(val kar: Char) {
             kartyp[63] = QUESTION
         }
 
-        fun kartyp(char: Char): KarType {
-            return kartyp[char.code]
-        }
-
         fun isa(sym: Symbol, vararg op: SymType): Boolean {
             return (sym.typ in op)
         }
+
         fun isaC(char: Char, vararg op: KarType): Boolean {
-            return (kartyp(char) in op)
+            return (kartyp[char.code] in op)
         }
     }
 }
