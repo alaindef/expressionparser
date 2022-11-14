@@ -10,6 +10,3 @@ letter      ::= a | b | c | ....
 digit       ::= 1 | 2 | 3 | ...
 var         ::= letter | {letter | digit}
 num         ::= {digit}
-
-		
-

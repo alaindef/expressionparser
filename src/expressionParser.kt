@@ -1,21 +1,6 @@
 import Kars.SymType.*
 import Kars.Symbol
 
-/* Backus Naur:
-expression	::= term	    |   *{OP_3  term}
-term		::= factor	    |   *{OP_2  factor}
-factor      ::= var         | num                |   bexpression
-bexpression ::= LB expression RB
-OP_3        ::= + | -
-OP_2        ::= * | / | > | < | = | ? | :
-LB          ::= (
-RB          ::= )
-letter      ::= a | b | c | ....
-digit       ::= 1 | 2 | 3 | ...
-var         ::= letter | {letter | digit}
-num         ::= {digit}
-*/
-
 class ExpressionParser {
     companion object {
         private var symIn = Symbol(NONE, "")
@@ -32,9 +17,7 @@ class ExpressionParser {
             textIn = "$s!"
             symList = Pass1.parse(s)
             textOut = Pass2.parse(symList)
-
         }
-
 
         fun report(s: String, level: Int) {
             if (level <= reportLevel) print(s)
@@ -42,6 +25,22 @@ class ExpressionParser {
 
         fun reportln(s: String, level: Int) {
             if (level <= reportLevel) println(s)
+        }
+
+        fun reportln(list: Array<Symbol>, level: Int) {
+            for (element in list) {
+                if ((element.typ == NONE) or (element.typ == EOT)) {
+                    reportln("", 0)
+                    break
+                } else report("${element.typ.toString().padEnd(11)} ", 1)
+            }
+            for (element in list) {
+                if (element.typ == NONE) {
+                    reportln("", 1)
+                    break
+                } else report("${element.content.toString().padEnd(11)} ", 1)
+            }
+            reportln("", 1)
         }
     }
 }

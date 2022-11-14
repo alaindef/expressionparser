@@ -1,7 +1,6 @@
 import Kars.KarType.*
 
 data class Kars(val kar: Char) {
-
     enum class KarType(val pp: String) {
         ETX("ETX"),
         LF("LF"),
@@ -18,9 +17,7 @@ data class Kars(val kar: Char) {
         GT("[>]"),
         LT("[<]"),
         COLON("[:]"),
-        QUESTION("[?]"),
-
-        //        QUESTION(""),
+        QUESTION(""),   // we ignore this operator, becase ':' takes care of ternary, else QUESTION("[?]"),
         LETTER("L"),
         DIGIT("D"),
         CR("CR"),
@@ -30,12 +27,12 @@ data class Kars(val kar: Char) {
     }
 
     enum class SymType {
+        // https://en.cppreference.com/w/cpp/language/operator_precedence#cite_note-2
+        // of https://en.wikipedia.org/wiki/Order_of_operations
         COMMENT,
         VARIABLE,
         LITERAL,            //literal
-        OPERATOR_3,         // https://en.cppreference.com/w/cpp/language/operator_precedence#cite_note-2
-
-        // of https://en.wikipedia.org/wiki/Order_of_operations
+        OPERATOR_3,
         OPERATOR_5,         // * or /, according to precedence order
         OPERATOR_6,         // + or -
         OPERATOR_16,        // like elvis

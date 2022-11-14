@@ -5,6 +5,7 @@ import Kars.*
 import Kars.Companion.kartyp
 import ExpressionParser.Companion.report
 import ExpressionParser.Companion.reportln
+import Kars.Companion.isa
 import Kars.Companion.isaC
 
 class Pass1 {
@@ -17,11 +18,9 @@ class Pass1 {
         private const val errorLog: String = "logx.txt"
         private var errorsLogged: Int = 0
         private var errorsPresent: Boolean = false
-
         private var c: Char = '\u0000'
 
         fun parse(s: String): Array<Symbol> {
-//            input: textIn, output: symList
             clear()
             textIn = s
             cursor = 0
@@ -29,24 +28,19 @@ class Pass1 {
             reportln("textIn =  $textIn", 0)
             do {
                 symIn = makeSymbol()
+                if (isa(symIn, ELVIS_C)) {                                       // substitute '?(' for '?'
+                    symList[symLocation] = Symbol(PAIR_END, PAR_RIGHT.pp)
+                    symLocation++
+                }
                 symList[symLocation] = Symbol(symIn.typ, symIn.content)
                 symLocation++
+                if (isa(symIn, ELVIS_Q)) {                                       // substitute '?(' for '?'
+                    symList[symLocation] = Symbol(PAIR_START, PAR_LEFT.pp)
+                    symLocation++
+                }
             } while (symIn.typ != EOT)
 
-            for (element in symList) {
-                if ((element.typ == NONE) or (element.typ == EOT)) {
-                    ExpressionParser.reportln("", 0)
-                    break
-                } else report("${element.typ.toString().padEnd(11)} ", 1)
-            }
-            for (element in symList) {
-                if (element.typ == NONE) {
-                    reportln("", 1)
-                    break
-                } else report("${element.content.toString().padEnd(11)} ", 1)
-            }
-            reportln("", 1)
-
+            reportln(symList,1)
             return symList
         }
 
@@ -63,7 +57,7 @@ class Pass1 {
             val tup = kartyp[c.code]
             symIn.content = tup.pp
             when (tup) {
-                LETTER, DIGIT ->{                              //c is a KAR, so we're building a string
+                LETTER, DIGIT -> {                              //c is a KAR, so we're building a string
                     var s = "";
                     while (isaC(c, LETTER, DIGIT)) {
                         s += c;
@@ -90,10 +84,10 @@ class Pass1 {
                     }
                 }
                 QUESTION -> {
-                        symIn.typ = PAIR_START                  //the special character becomes the typ
+                    symIn.typ = ELVIS_Q                  //the special character becomes the typ
                 }
                 COLON -> {
-                        symIn.typ = PAIR_END                  //the special character becomes the typ
+                    symIn.typ = ELVIS_C                  //the special character becomes the typ
                 }
                 PLUS, MINUS -> {
                     if (symLocation == 0) {
@@ -153,11 +147,9 @@ class Pass1 {
             cursor = 0
             errorsLogged = 0
             errorsPresent = false
-
             textIn = ""
             symLocation = 0
             symList = Array(256) { Symbol(EOT, "") }
-
             for (i in 0..255) {
                 symList[i] = Symbol(EOT, "")
             }

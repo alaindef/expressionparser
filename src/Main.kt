@@ -25,12 +25,12 @@ object Main {
     @JvmStatic
     fun main(args: Array<String>) {
 //        readFromTerminalAndParse(0)
-//        ExpressionParser.textIn ="(13 + 2*3)+(5+45)!"
+//        ExpressionParser.parseExp("(-13 + 2*3)+(5+45)!",1)
 //        ExpressionParser.pass1()
 //        readFromTerminalAndParse(0)
 //        ExpressionParser.parseExp("a+1!", 0)
-//        ExpressionParser.parseExp("1a57 > 5 ?10+8:20!", 1)
-        ExpressionParser.parseExp("abc/?-x+b23)!", 1)
+        ExpressionParser.parseExp("1a57 > (5 -((x+(y-x3<3?x3+4:17-c)))) ? 10+8:20!", 1)
+//        ExpressionParser.parseExp("a<b?c+d:e*5!", 1)
 //        ExpressionParser.parseExp("?a+b)!",1)
 //        ExpressionParser.parseExp("(23+ -a)*(-3*b+2)*-c!", 0)     //error!
 //        test()

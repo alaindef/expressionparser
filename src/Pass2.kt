@@ -5,7 +5,6 @@ import Kars.Companion.isa
 import ExpressionParser.Companion.reportln
 
 class Pass2 {
-
     companion object {
         private var symIn = Symbol(NONE, "")
         private var cursor: Int = 0
@@ -16,13 +15,11 @@ class Pass2 {
         private var errorsPresent: Boolean = false
 
         fun parse(s: Array<Symbol>): String {
-//            input: symlist, output: RPN
             clear()
             symList = s
             cursor = 0
             errorsPresent = false
             try {
-//                if (comment()) return
                 symIn = nextSymbol()
                 expression()
             } catch (e: IllegalArgumentException) {
@@ -34,17 +31,9 @@ class Pass2 {
             return textOut
         }
 
-        private fun comment(): Boolean {
-            val psym: Symbol = nextSymbol()
-            if (psym.typ == COMMENT) return true
-            cursor = 0                              //do not start line at cursor=1 !
-            symIn = Symbol(NONE, "")
-            return false
-        }
-
         private fun expression() {
             term()
-            while (isa(symIn, OPERATOR_6)) {
+            while (isa(symIn, OPERATOR_6, ELVIS_Q, ELVIS_C)) {
                 val save = symIn
                 symIn = nextSymbol()
                 term()
@@ -58,20 +47,8 @@ class Pass2 {
                 symIn = nextSymbol()
                 factor()
                 val code = 177
-
                 if (save.content == "[-]") push(Symbol(OPERATOR_3, "${code.toChar()}"))
             }
-            factor()
-            while (isa(symIn, OPERATOR_5)) {
-                val save = symIn
-                symIn = nextSymbol()
-                factor()
-                push(save)
-            }
-        }
-
-        private fun term1() {
-            if (isa(symIn, OPERATOR_6)) push(Symbol(VARIABLE, "0"))      // things like (-a+b)
             factor()
             while (isa(symIn, OPERATOR_5)) {
                 val save = symIn
@@ -89,39 +66,26 @@ class Pass2 {
                     symIn = nextSymbol()
                 }
                 else -> bExpression()
-
-//                ELVIS_Q -> elvisExpression()
             }
         }
 
-
         private fun bExpression() {
-            if (isa(symIn, PAIR_START,ELVIS_Q)) {
+            if (isa(symIn, PAIR_START, ELVIS_Q)) {
                 symIn = nextSymbol()
                 expression()
-                if (isa(symIn,PAIR_END,ELVIS_C)) {
+                if (isa(symIn, PAIR_END, ELVIS_C)) {
                     symIn = nextSymbol()
                 } else
                     println("PAIR END ERROR")
             }
         }
 
-        private fun elvisExpression() {
-            if (symIn.typ == ELVIS_Q) {
-                symIn = nextSymbol()
-                expression()
-                if (symIn.typ == ELVIS_C) {
-                    symIn = nextSymbol()
-                } else
-                    println("ELVIS ERROR")
-            }
-        }
-
         private fun nextSymbol(vararg expected: SymType): Symbol {
+            val next = symList[cursor]
             cursor++
-            return symList[cursor - 1]
+//            if (next.typ in expected)
+            return next
         }
-
 
         fun push(sym: Symbol) {
             textOut += " ${sym.content}"
@@ -137,6 +101,5 @@ class Pass2 {
                 symList[i] = Symbol(EOT, "")
             }
         }
-
     }
 }
