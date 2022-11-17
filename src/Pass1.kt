@@ -3,7 +3,6 @@ import Kars.SymType.*
 import Kars.Symbol
 import Kars.*
 import Kars.Companion.kartyp
-import ExpressionParser.Companion.report
 import ExpressionParser.Companion.reportln
 import Kars.Companion.isa
 import Kars.Companion.isaC
@@ -15,8 +14,6 @@ class Pass1 {
         var textIn: String = ""
         private var symLocation = 0
         private var symList = Array(256) { Symbol(EOT, "") }
-        private const val errorLog: String = "logx.txt"
-        private var errorsLogged: Int = 0
         private var errorsPresent: Boolean = false
         private var c: Char = '\u0000'
 
@@ -28,14 +25,14 @@ class Pass1 {
             reportln("textIn =  $textIn", 0)
             do {
                 symIn = makeSymbol()
-                if (isa(symIn, ELVIS_C)) {                                       // substitute '?(' for '?'
-                    symList[symLocation] = Symbol(PAIR_END, PAR_RIGHT.pp)
+                if (isa(symIn, ELV_C)) {                                       // substitute '?(' for '?'
+                    symList[symLocation] = Symbol(BEXPE, PAR_R.pp)
                     symLocation++
                 }
                 symList[symLocation] = Symbol(symIn.typ, symIn.content)
                 symLocation++
-                if (isa(symIn, ELVIS_Q)) {                                       // substitute '?(' for '?'
-                    symList[symLocation] = Symbol(PAIR_START, PAR_LEFT.pp)
+                if (isa(symIn, ELV_Q)) {                                       // substitute '?(' for '?'
+                    symList[symLocation] = Symbol(BEXPS, PAR_L.pp)
                     symLocation++
                 }
             } while (symIn.typ != EOT)
@@ -45,9 +42,6 @@ class Pass1 {
         }
 
         private fun makeSymbol(vararg expected: SymType): Symbol {
-            if (cursor > 6) {           //for debugging
-                val xx = 1
-            }
             if (cursor >= textIn.length) return symIn
             c = textIn[cursor]
             if (isaC(c, BLANK, TAB)) {
@@ -57,57 +51,57 @@ class Pass1 {
             val tup = kartyp[c.code]
             symIn.content = tup.pp
             when (tup) {
-                LETTER, DIGIT -> {                              //c is a KAR, so we're building a string
+                LETT, DIGIT -> {                              //c is a KAR, so we're building a string
                     var s = "";
-                    while (isaC(c, LETTER, DIGIT)) {
+                    while (isaC(c, LETT, DIGIT)) {
                         s += c;
                         cursor++
                         c = textIn[cursor]
                     }
-                    symIn.typ = VARIABLE;
+                    symIn.typ = VARI;
                     symIn.content = s
                     cursor--
                 }
-                EXCLAM, ETX, LF, CR, OTHER -> {
+                EXCLA, ETX, LF, CR, OTHER -> {
                     symIn.typ = EOT
                     return symIn
                 }
-                PAR_LEFT -> {
-                    symIn.typ = PAIR_START                      //the special character becomes the typ
+                PAR_L -> {
+                    symIn.typ = BEXPS                      //the special character becomes the typ
                 }
-                PAR_RIGHT -> {
-                    symIn.typ = PAIR_END                        //the special character becomes the typ
+                PAR_R -> {
+                    symIn.typ = BEXPE                        //the special character becomes the typ
                 }
-                TIMES, DIVIDE, GT, LT, EQ -> {
+                TIMES, DIV, GT, LT, EQ -> {
                     if (symLocation > 0) {                      //we have a separator
-                        symIn.typ = OPERATOR_5                  //the special character becomes the typ
+                        symIn.typ = OP_5                  //the special character becomes the typ
                     }
                 }
-                QUESTION -> {
-                    symIn.typ = ELVIS_Q                  //the special character becomes the typ
+                QUEST -> {
+                    symIn.typ = ELV_Q                  //the special character becomes the typ
                 }
                 COLON -> {
-                    symIn.typ = ELVIS_C                  //the special character becomes the typ
+                    symIn.typ = ELV_C                  //the special character becomes the typ
                 }
                 PLUS, MINUS -> {
                     if (symLocation == 0) {
-                        symIn.typ = OPERATOR_3
-                    } else if (isaC(textIn[cursor - 1], TIMES, DIVIDE, PLUS, MINUS, PAR_LEFT, QUESTION)) {
+                        symIn.typ = OP_3
+                    } else if (isaC(textIn[cursor - 1], TIMES, DIV, PLUS, MINUS, PAR_L, QUEST)) {
                         // we are not adding to the previous, this is a unary operator
-                        symIn.typ = OPERATOR_3
-                    } else symIn.typ = OPERATOR_6
+                        symIn.typ = OP_3
+                    } else symIn.typ = OP_6
                 }
                 TEST -> {                             //c is a KAR, so we're building a string
                     var s = "";
                     s += c;
                     cursor++
                     c = textIn[cursor]
-                    while (isaC(c, LETTER, DIGIT)) {
+                    while (isaC(c, LETT, DIGIT)) {
                         s += c;
                         cursor++
                         c = textIn[cursor]
                     }
-                    symIn.typ = VARIABLE;
+                    symIn.typ = VARI;
                     symIn.content = s
                 }
                 else -> {                                       //we have a separator
@@ -119,7 +113,6 @@ class Pass1 {
             if (symIn.typ in expected) return symIn         //check on expected char is ok, no complaints
             val expectedList = expected.contentToString()
             errorsPresent = true
-            errorsLogged++
             throw IllegalArgumentException(
                 "SEPARATOR in line at cursor " +
                         "$cursor < ${textIn.substring(0, cursor)} > \n" +
@@ -129,13 +122,13 @@ class Pass1 {
         }
 
         private fun treatKar() {                                        //c is a KAR, so we're building a string
-            symIn.typ = VARIABLE;
+            symIn.typ = VARI;
             var s = "";
             c = textIn[cursor]
             s += c;
             cursor++
             c = textIn[cursor]
-            while (isaC(c, LETTER, DIGIT)) {
+            while (isaC(c, LETT, DIGIT)) {
                 s += c;
                 cursor++
                 c = textIn[cursor]
@@ -145,7 +138,6 @@ class Pass1 {
 
         private fun clear() {
             cursor = 0
-            errorsLogged = 0
             errorsPresent = false
             textIn = ""
             symLocation = 0

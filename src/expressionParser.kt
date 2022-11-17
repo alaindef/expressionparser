@@ -10,13 +10,12 @@ class ExpressionParser {
         private var symList = Array(256) { Symbol(EOT, "") }
         var reportLevel = 1
         private const val errorLog: String = "logx.txt"
-        private var errorsLogged: Int = 0
         private var errorsPresent: Boolean = false
-        fun parseExp(s: String, reportLevelIn: Int) {
-            reportLevel = reportLevelIn
+        fun parseExp(s: String) {
             textIn = "$s!"
             symList = Pass1.parse(s)
             textOut = Pass2.parse(symList)
+            println()
         }
 
         fun report(s: String, level: Int) {
@@ -28,17 +27,25 @@ class ExpressionParser {
         }
 
         fun reportln(list: Array<Symbol>, level: Int) {
+            var index = 0
+            val padding = 5
             for (element in list) {
                 if ((element.typ == NONE) or (element.typ == EOT)) {
-                    reportln("", 0)
+                    reportln("", level)
                     break
-                } else report("${element.typ.toString().padEnd(11)} ", 1)
+                } else report("${index++.toString().padEnd(padding)} ", 1)
+            }
+            for (element in list) {
+                if ((element.typ == NONE) or (element.typ == EOT)) {
+                    reportln("", level)
+                    break
+                } else report("${element.typ.toString().padEnd(padding)} ", 1)
             }
             for (element in list) {
                 if (element.typ == NONE) {
-                    reportln("", 1)
+                    reportln("", level)
                     break
-                } else report("${element.content.toString().padEnd(11)} ", 1)
+                } else report("${element.content.toString().padEnd(padding)} ", 1)
             }
             reportln("", 1)
         }

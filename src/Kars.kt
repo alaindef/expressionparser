@@ -6,23 +6,23 @@ data class Kars(val kar: Char) {
         LF("LF"),
         TAB("TAB"),
         BLANK("BLANK"),
-        HASHTAG("HASH"),
-        PAR_LEFT("PAR_LEFT"),
-        PAR_RIGHT("PAR_RIGHT"),
-        TIMES("[*]"),
-        DIVIDE("[/]"),
-        PLUS("[+]"),
-        MINUS("[-]"),
-        EQ("[=]"),
-        GT("[>]"),
-        LT("[<]"),
-        COLON("[:]"),
-        QUESTION(""),   // we ignore this operator, becase ':' takes care of ternary, else QUESTION("[?]"),
-        LETTER("L"),
+        HASHT("HASHT"),
+        PAR_L("PAR_L"),
+        PAR_R("PAR_R"),
+        TIMES("*"),
+        DIV("/"),
+        PLUS("+"),
+        MINUS("-"),
+        EQ("="),
+        GT(">"),
+        LT("<"),
+        COLON(":"),
+        QUEST(""),   // we ignore this operator, becase ':' takes care of ternary, else QUESTION("[?]"),
+        LETT("L"),
         DIGIT("D"),
         CR("CR"),
         OTHER("OTHER"),
-        EXCLAM("THE_END"),
+        EXCLA("!END!"),
         TEST("TEST")
     }
 
@@ -30,16 +30,16 @@ data class Kars(val kar: Char) {
         // https://en.cppreference.com/w/cpp/language/operator_precedence#cite_note-2
         // of https://en.wikipedia.org/wiki/Order_of_operations
         COMMENT,
-        VARIABLE,
-        LITERAL,            //literal
-        OPERATOR_3,
-        OPERATOR_5,         // * or /, according to precedence order
-        OPERATOR_6,         // + or -
-        OPERATOR_16,        // like elvis
-        ELVIS_Q,
-        ELVIS_C,
-        PAIR_START,
-        PAIR_END,
+        VARI,
+        LIT,            //literal
+        OP_3,
+        OP_5,         // * or /, according to precedence order
+        OP_6,         // + or -
+        OP_16,        // like elvis
+        ELV_Q,
+        ELV_C,
+        BEXPS,
+        BEXPE,
         EOT,
         NONE;
 
@@ -57,26 +57,26 @@ data class Kars(val kar: Char) {
 
         init {
             for (i in 48..57) kartyp[i] = DIGIT
-            for (i in 65..90) kartyp[i] = LETTER
-            for (i in 97..122) kartyp[i] = LETTER
+            for (i in 65..90) kartyp[i] = LETT
+            for (i in 97..122) kartyp[i] = LETT
             kartyp[0] = ETX
             kartyp[10] = LF
             kartyp[11] = TAB
             kartyp[13] = CR
             kartyp[32] = BLANK
-            kartyp[33] = EXCLAM
-            kartyp[35] = HASHTAG
-            kartyp[40] = PAR_LEFT
-            kartyp[41] = PAR_RIGHT
+            kartyp[33] = EXCLA
+            kartyp[35] = HASHT
+            kartyp[40] = PAR_L
+            kartyp[41] = PAR_R
             kartyp[42] = TIMES
             kartyp[43] = PLUS
             kartyp[45] = MINUS
-            kartyp[47] = DIVIDE
+            kartyp[47] = DIV
             kartyp[58] = COLON
             kartyp[60] = LT
             kartyp[61] = EQ
             kartyp[62] = GT
-            kartyp[63] = QUESTION
+            kartyp[63] = QUEST
         }
 
         fun isa(sym: Symbol, vararg op: SymType): Boolean {
