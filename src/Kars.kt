@@ -17,7 +17,7 @@ data class Kars(val kar: Char) {
         GT(">"),
         LT("<"),
         COLON(":"),
-        QUEST(""),   // we ignore this operator, becase ':' takes care of ternary, else QUESTION("[?]"),
+        QUEST("?"),   // we ignore this operator, becase ':' takes care of ternary, else QUESTION("[?]"),
         LETT("L"),
         DIGIT("D"),
         CR("CR"),
@@ -52,7 +52,8 @@ data class Kars(val kar: Char) {
     data class Symbol(var typ: SymType = SymType.NONE, var content: String)
 
     companion object {
-        val karname: CharArray = CharArray(256)
+        val expressionSize = 64
+        val karname: CharArray = CharArray(expressionSize)
         var kartyp = Array(256) { OTHER }
 
         init {

@@ -3,13 +3,15 @@ import Kars.Symbol
 import Kars.*
 import Kars.Companion.isa
 import ExpressionParser.Companion.reportln
+import Kars.Companion.expressionSize
 
 class Pass2 {
     companion object {
         private var symIn = Symbol(NONE, "")
         private var cursor: Int = 0
         var textOut: String = ""
-        private var symList = Array(256) { Symbol(EOT, "") }
+        var symListOut: MutableList<Symbol> = mutableListOf()
+        private var symList = Array(expressionSize) { Symbol(EOT, "") }
         private var errorsPresent: Boolean = false
 
         fun parse(s: Array<Symbol>): String {
@@ -49,7 +51,7 @@ class Pass2 {
             factor()
             while (isa(symIn, OP_5)) {
                 val save = symIn
-                symIn = nextSymbol("term", VARI,BEXPS)
+                symIn = nextSymbol("term", VARI, BEXPS)
                 factor()
                 push(save)
             }
@@ -70,17 +72,9 @@ class Pass2 {
             if (isa(symIn, BEXPS)) {
                 symIn = nextSymbol("bExpression", VARI, BEXPS, OP_3)
                 expression()
-                    symIn = nextSymbol("bExpression", VARI, OP_6, BEXPS, BEXPE, ELV_Q, ELV_C,  EOT)
+                symIn = nextSymbol("bExpression", VARI, OP_6, BEXPS, BEXPE, ELV_Q, ELV_C, EOT)
             }
         }
-
-        private fun nextSymbol1(vararg expected: SymType): Symbol {
-            val next = symList[cursor]
-            cursor++
-//            if (next.typ in expected)
-            return next
-        }
-
 
         private fun nextSymbol(from: String, vararg expected: SymType): Symbol {
             val next = symList[cursor]
@@ -96,15 +90,16 @@ class Pass2 {
         }
 
         fun push(sym: Symbol) {
+            symListOut.add(sym)
             textOut += " ${sym.content}"
-            reportln("push >>> ${sym.content}", 2)
+            reportln("push >>> ${sym.content}", 3)
         }
 
         private fun clear() {
             cursor = 0
             errorsPresent = false
             textOut = ""
-            for (i in 0..255) {
+            for (i in 0..expressionSize - 1) {
                 symList[i] = Symbol(EOT, "")
             }
         }

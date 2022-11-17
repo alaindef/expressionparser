@@ -4,6 +4,7 @@ import Kars.Symbol
 import Kars.*
 import Kars.Companion.kartyp
 import ExpressionParser.Companion.reportln
+import Kars.Companion.expressionSize
 import Kars.Companion.isa
 import Kars.Companion.isaC
 
@@ -13,7 +14,7 @@ class Pass1 {
         private var cursor: Int = 0
         var textIn: String = ""
         private var symLocation = 0
-        private var symList = Array(256) { Symbol(EOT, "") }
+        private var symList = Array(expressionSize) { Symbol(EOT, "") }
         private var errorsPresent: Boolean = false
         private var c: Char = '\u0000'
 
@@ -141,8 +142,8 @@ class Pass1 {
             errorsPresent = false
             textIn = ""
             symLocation = 0
-            symList = Array(256) { Symbol(EOT, "") }
-            for (i in 0..255) {
+            symList = Array(expressionSize) { Symbol(EOT, "") }
+            for (i in 0..expressionSize-1) {
                 symList[i] = Symbol(EOT, "")
             }
         }
