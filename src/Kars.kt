@@ -32,10 +32,10 @@ data class Kars(val kar: Char) {
         COMMENT,
         VARI,
         LIT,            //literal
-        OP_3,
-        OP_5,         // * or /, according to precedence order
-        OP_6,         // + or -
-        OP_16,        // like elvis
+        OP_3,           // CHS "change sign "
+        OP_5,           // * or /, according to precedence order
+        OP_6,           // + or -
+        OP_16,          // like elvis
         ELV_Q,
         ELV_C,
         BEXPS,
@@ -49,17 +49,19 @@ data class Kars(val kar: Char) {
     }
 
     enum class Category { SEPARATOR, SKIP, NOTHING }
-    data class Symbol(var typ: SymType = SymType.NONE, var content: String)
+    data class Symbol(var typ: SymType = SymType.NONE,
+                      var content: String,
+                      var cursor: Int)
 
     companion object {
         val expressionSize = 64
-        val karname: CharArray = CharArray(expressionSize)
         var kartyp = Array(256) { OTHER }
 
         init {
             for (i in 48..57) kartyp[i] = DIGIT
             for (i in 65..90) kartyp[i] = LETT
             for (i in 97..122) kartyp[i] = LETT
+            kartyp[95] = LETT
             kartyp[0] = ETX
             kartyp[10] = LF
             kartyp[11] = TAB

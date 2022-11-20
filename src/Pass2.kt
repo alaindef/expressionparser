@@ -7,16 +7,16 @@ import Kars.Companion.expressionSize
 
 class Pass2 {
     companion object {
-        private var symIn = Symbol(NONE, "")
+        private var symIn = Symbol(NONE, "", 0)
         private var cursor: Int = 0
         var textOut: String = ""
         var symListOut: MutableList<Symbol> = mutableListOf()
-        private var symList = Array(expressionSize) { Symbol(EOT, "") }
+        var symListIn: MutableList<Symbol> = mutableListOf()
         private var errorsPresent: Boolean = false
 
-        fun parse(s: Array<Symbol>): String {
+        fun parse(symList: MutableList<Symbol>): MutableList<Symbol> {
             clear()
-            symList = s
+            symListIn = symList
             cursor = 0
             errorsPresent = false
             try {
@@ -27,14 +27,14 @@ class Pass2 {
             }
             if (!errorsPresent)
                 println("RPN: $textOut  ")
-            return textOut
+            return symListOut
         }
 
         private fun expression() {
             term()
             while (isa(symIn, OP_6, ELV_Q, ELV_C)) {
                 val save = symIn
-                symIn = nextSymbol("expresion", VARI, BEXPS)
+                symIn = nextSymbol("expression", VARI, BEXPS)
                 term()
                 push(save)
             }
@@ -46,7 +46,7 @@ class Pass2 {
                 symIn = nextSymbol("term", VARI)
                 factor()
                 val code = 177
-                if (save.content == "-") push(Symbol(OP_3, "${code.toChar()}"))
+                if (save.content == "-") push(Symbol(OP_3, "${code.toChar()}", symIn.cursor))
             }
             factor()
             while (isa(symIn, OP_5)) {
@@ -77,13 +77,15 @@ class Pass2 {
         }
 
         private fun nextSymbol(from: String, vararg expected: SymType): Symbol {
-            val next = symList[cursor]
-            cursor++
+            if (symListIn.isEmpty())
+                throw java.lang.IllegalArgumentException(
+                    "from <$from>: symbols missing!")
+            val next = symListIn.removeFirst()
             if (expected.isEmpty()) return next
             if (next.typ in expected) return next
             errorsPresent = true
             throw java.lang.IllegalArgumentException(
-                "from <$from> at cursor=${--cursor} symbol={${next.content}, ${next.typ}} " +
+                "from <$from> at cursor=${next.cursor} symbol={${next.content}, ${next.typ}} " +
                         "NOT IN ${expected.contentToString()}"
             )
             return next
@@ -96,12 +98,12 @@ class Pass2 {
         }
 
         private fun clear() {
+            symListOut.clear()
             cursor = 0
             errorsPresent = false
             textOut = ""
-            for (i in 0..expressionSize - 1) {
-                symList[i] = Symbol(EOT, "")
-            }
+//            symListIn.clear()                       //adf EOT ???
+            symListIn.add(Symbol(EOT,"",0))
         }
     }
 }

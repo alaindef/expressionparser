@@ -3,20 +3,21 @@ import Kars.Symbol
 
 class ExpressionParser {
     companion object {
-        private var symIn = Symbol(NONE, "")
+        private var symIn = Symbol(NONE, "",0)
         private var cursor: Int = 0
         var textIn: String = ""
         var textOut: String = ""
-        private var symList = Array(Kars.expressionSize) { Symbol(EOT, "") }
+        var symListOut: MutableList<Symbol> = mutableListOf()
+        private var symList: MutableList<Symbol> = mutableListOf()
         var reportLevel = 1
         private const val errorLog: String = "logx.txt"
         private var errorsPresent: Boolean = false
-        fun parseExp(s: String): String {
+        fun parseExp(s: String): MutableList<Symbol> {
             textIn = "$s!"
             symList = Pass1.parse(s)
-            textOut = Pass2.parse(symList)
+            symListOut = Pass2.parse(symList)
 //            println()
-            return textOut
+            return symListOut
         }
 
         fun report(s: String, level: Int) {
@@ -27,8 +28,7 @@ class ExpressionParser {
             if (level <= reportLevel) println(s)
         }
 
-
-        fun reportln(list: Array<Symbol>, level: Int) {
+        fun reportln1(list: MutableList<Symbol>, level: Int, padding: Int) {
             var index = 0
             val padding = 5
             for (element in list) {
@@ -58,7 +58,7 @@ class ExpressionParser {
                     ExpressionParser.reportln("", level)
                     break
                 } else {
-                    val ss = "${element.content.toString().padEnd(padding)}"
+                    val ss = "${element.content.toString().padEnd(padding)} "
                     ExpressionParser.report(ss, level)
                 }
             }

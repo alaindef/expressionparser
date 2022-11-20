@@ -1,25 +1,18 @@
 import Kars.SymType.*
 import Kars.Symbol
 
-class interpreter {
+class Interpreter {
     companion object {
-        private var symIn = Symbol(NONE, "")
-        private var cursor: Int = 0
-        var textIn: String = ""
-        var textOut: String = ""
-        private var symList = Array(Kars.expressionSize) { Symbol(EOT, "") }
-        var reportLevel = 1
-        private var errorsPresent: Boolean = false
         fun evalE(stack: MutableList<Symbol>): Symbol {
-            var res: Int = 0
+            var res = 0
             val op = stack.removeLast()
             val v1 = stack.removeLast().content.toInt()
             val v2 = stack.removeLast().content.toInt()
             when (op.content) {
-                "*" -> res = v1 * v2
-                "/" -> res = v1 / v2
-                "+" -> res = v1 + v2
-                "-" -> res = v1 - v2
+                "*" -> res = v2 * v1
+                "/" -> res = v2 / v1
+                "+" -> res = v2 + v1
+                "-" -> res = v2 - v1
                 "<" -> res = if (v2 < v1) 1 else 0
                 ">" -> res = if (v2 > v1) 1 else 0
                 "=" -> res = if (v2 == v1) 1 else 0
@@ -28,13 +21,12 @@ class interpreter {
                     res = if (v3 > 0) v2 else v1
                 }
             }
-            return Symbol(VARI, res.toString())
+            return Symbol(VARI, res.toString(),0)
         }
-
         fun readE(s: MutableList<Symbol>): MutableList<Symbol> {
             var out = ""
             var sym: Symbol
-            val stack: MutableList<Symbol> = mutableListOf(Symbol(VARI, "$"))
+            val stack: MutableList<Symbol> = mutableListOf(Symbol(VARI, "$",0))
             ExpressionParser.reportln(s, 2, 5)
             for (element in s) {
                 if (element.typ != ELV_Q) {
@@ -46,6 +38,7 @@ class interpreter {
                 }
             }
             ExpressionParser.reportln("Calculator result = ${stack[1].content}", 0)
+            ExpressionParser.reportln("",0)
             return stack
         }
 

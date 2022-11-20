@@ -10,15 +10,17 @@ import Kars.Companion.isaC
 
 class Pass1 {
     companion object {
-        private var symIn = Symbol(NONE, "")
+        private var symIn = Symbol(NONE, "",0)
+        private var isFirstSymbol=true
         private var cursor: Int = 0
         var textIn: String = ""
-        private var symLocation = 0
-        private var symList = Array(expressionSize) { Symbol(EOT, "") }
+
+        //        private var symList = Array(expressionSize) { Symbol(EOT, "") }
+        private var symList: MutableList<Symbol> = mutableListOf()
         private var errorsPresent: Boolean = false
         private var c: Char = '\u0000'
 
-        fun parse(s: String): Array<Symbol> {
+        fun parse(s: String): MutableList<Symbol> {
             clear()
             textIn = s
             cursor = 0
@@ -27,18 +29,15 @@ class Pass1 {
             do {
                 symIn = makeSymbol()
                 if (isa(symIn, ELV_C)) {                                       // substitute '?(' for '?'
-                    symList[symLocation] = Symbol(BEXPE, PAR_R.pp)
-                    symLocation++
+                    symList.add(Symbol(BEXPE, PAR_R.pp, cursor))
                 }
-                symList[symLocation] = Symbol(symIn.typ, symIn.content)
-                symLocation++
+                symList.add(Symbol(symIn.typ, symIn.content, cursor))
                 if (isa(symIn, ELV_Q)) {                                       // substitute '?(' for '?'
-                    symList[symLocation] = Symbol(BEXPS, PAR_L.pp)
-                    symLocation++
+                    symList.add(Symbol(BEXPS, PAR_L.pp, cursor))
                 }
             } while (symIn.typ != EOT)
 
-            reportln(symList,1)
+            reportln(symList, 1, 5)
             return symList
         }
 
@@ -74,7 +73,7 @@ class Pass1 {
                     symIn.typ = BEXPE                        //the special character becomes the typ
                 }
                 TIMES, DIV, GT, LT, EQ -> {
-                    if (symLocation > 0) {                      //we have a separator
+                    if (! (isFirstSymbol)) {                      //we have a separator
                         symIn.typ = OP_5                  //the special character becomes the typ
                     }
                 }
@@ -85,7 +84,7 @@ class Pass1 {
                     symIn.typ = ELV_C                  //the special character becomes the typ
                 }
                 PLUS, MINUS -> {
-                    if (symLocation == 0) {
+                    if (isFirstSymbol) {
                         symIn.typ = OP_3
                     } else if (isaC(textIn[cursor - 1], TIMES, DIV, PLUS, MINUS, PAR_L, QUEST)) {
                         // we are not adding to the previous, this is a unary operator
@@ -109,6 +108,7 @@ class Pass1 {
                     symIn.typ = NONE                      //the special character becomes the typ
                 }
             }
+            isFirstSymbol = false
             cursor++
             if (expected.isEmpty()) return symIn            //default, we do not complain
             if (symIn.typ in expected) return symIn         //check on expected char is ok, no complaints
@@ -141,11 +141,7 @@ class Pass1 {
             cursor = 0
             errorsPresent = false
             textIn = ""
-            symLocation = 0
-            symList = Array(expressionSize) { Symbol(EOT, "") }
-            for (i in 0..expressionSize-1) {
-                symList[i] = Symbol(EOT, "")
-            }
+            symList.clear()
         }
     }
 }

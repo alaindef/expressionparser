@@ -1,9 +1,9 @@
-expression	::= term	    |   *{OP_3  term}
-term		::= factor	    |   *{OP_2  factor}
+expression	::= term	    |   *{OP_6  term}
+term		::= factor	    |   *{OP_5  factor}
 factor      ::= var         | num                |   bexpression
 bexpression ::= LB expression RB
-OP_3        ::= + | -
-OP_2        ::= * | / | > | < | = | ? | :
+OP_6        ::= + | -
+OP_5        ::= * | / | > | < | = | ? | :
 LB          ::= (
 RB          ::= )
 letter      ::= a | b | c | ....
