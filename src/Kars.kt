@@ -9,6 +9,7 @@ data class Kars(val kar: Char) {
         HASHT("HASHT"),
         PAR_L("PAR_L"),
         PAR_R("PAR_R"),
+        DOT("."),
         TIMES("*"),
         DIV("/"),
         PLUS("+"),
@@ -74,6 +75,7 @@ data class Kars(val kar: Char) {
             kartyp[42] = TIMES
             kartyp[43] = PLUS
             kartyp[45] = MINUS
+            kartyp[46] = DOT
             kartyp[47] = DIV
             kartyp[58] = COLON
             kartyp[60] = LT

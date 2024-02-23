@@ -4,20 +4,20 @@ import Kars.Symbol
 class Interpreter {
     companion object {
         fun evalE(stack: MutableList<Symbol>): Symbol {
-            var res = 0
+            var res = 0f
             val op = stack.removeLast()
-            val v1 = stack.removeLast().content.toInt()
-            val v2 = stack.removeLast().content.toInt()
+            val v1 = stack.removeLast().content.toFloat()
+            val v2 = stack.removeLast().content.toFloat()
             when (op.content) {
                 "*" -> res = v2 * v1
                 "/" -> res = v2 / v1
                 "+" -> res = v2 + v1
                 "-" -> res = v2 - v1
-                "<" -> res = if (v2 < v1) 1 else 0
-                ">" -> res = if (v2 > v1) 1 else 0
-                "=" -> res = if (v2 == v1) 1 else 0
+                "<" -> res = if (v2 < v1) 1f else 0f
+                ">" -> res = if (v2 > v1) 1f else 0f
+                "=" -> res = if (v2 == v1) 1f else 0f
                 ":" -> {
-                    val v3 = stack.removeLast().content.toInt()
+                    val v3 = stack.removeLast().content.toFloat()
                     res = if (v3 > 0) v2 else v1
                 }
             }

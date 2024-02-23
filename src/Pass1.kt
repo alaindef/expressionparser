@@ -51,9 +51,9 @@ class Pass1 {
             val tup = kartyp[c.code]
             symIn.content = tup.pp
             when (tup) {
-                LETT, DIGIT -> {                              //c is a KAR, so we're building a string
+                LETT, DIGIT, DOT -> {                              //c is a KAR, so we're building a string
                     var s = "";
-                    while (isaC(c, LETT, DIGIT)) {
+                    while (isaC(c, LETT, DIGIT, DOT)) {
                         s += c;
                         cursor++
                         c = textIn[cursor]
